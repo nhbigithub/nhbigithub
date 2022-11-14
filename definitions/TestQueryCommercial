@@ -1,0 +1,2 @@
+select * from nh-spit-resevations.wow_mom_process.testdataform
+where Production_Year='2022'
