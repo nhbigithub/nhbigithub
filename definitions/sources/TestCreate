@@ -1,4 +1,10 @@
 
+config {
+  type: "view",
+  name: "CreeateTable",
+  tags: ["Commercial", "Create1"]
+}
+
 CREATE or replace view nh-spit-resevations.wow_mom_process.testdataform as(
 
 
