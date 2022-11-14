@@ -1,11 +1,10 @@
 
 config {
-  type: "view",
+  type: "table",
   name: "CreeateTable",
   tags: ["Commercial", "Create1"]
 }
 
-CREATE or replace view nh-spit-resevations.wow_mom_process.testdataform as(
 
 
 SELECT
@@ -44,4 +43,3 @@ ifnull((case WHEN actual.Production_Year='2022' then sum(actual.Total_Revenue_Fi
 FROM
   `nh-spit-resevations.Commercial_Mirror.CM_Core_Extended`  actual
   group by Production_Year
-)
