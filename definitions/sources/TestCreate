@@ -1,0 +1,41 @@
+
+CREATE or replace view nh-spit-resevations.wow_mom_process.testdataform as(
+
+
+SELECT
+Production_Year,
+ ifnull((case WHEN actual.Production_Year='2022' then sum(actual.Total_Revenue_Fin_EUR) END),0) as TRev_Current,
+ ifnull((case WHEN actual.Production_Year='2021' then sum(actual.Total_Revenue_Fin_EUR) END),0) as TRev_LY,
+ ifnull((case WHEN actual.Production_Year='2023' then sum(actual.Total_Revenue_Fin_EUR) END),0) as TRev_20LY,
+ ifnull((case WHEN actual.Production_Year='2019' then sum(actual.Total_Revenue_Fin_EUR) END),0) as TRev_2LY,
+ ifnull((case WHEN actual.Production_Year='2022' then sum(actual.Total_Revenue_Net_EUR) END),0) as TNet_Current,
+ ifnull((case WHEN actual.Production_Year='2019' then sum(actual.Total_Revenue_Net_EUR) END),0) as TNet_2LY,
+ ifnull((case WHEN actual.Production_Year='2022' then sum(actual.Total_Revenue_Gross_EUR) END),0) as TRG_Current,
+ ifnull((case WHEN actual.Production_Year='2019' then sum(actual.Total_Revenue_Gross_EUR) END),0) as TRG_2LY,
+ ifnull((case WHEN actual.Production_Year='2022' then sum(actual.Total_Room_Revenue_Fin_EUR) END),0) as RRev_Current,
+ ifnull((case WHEN actual.Production_Year='2021' then sum(actual.Total_Room_Revenue_Fin_EUR) END),0) as RRev_LY,
+ ifnull((case WHEN actual.Production_Year='2023' then sum(actual.Total_Room_Revenue_Fin_EUR) END),0) as RRev_20LY,
+ ifnull((case WHEN actual.Production_Year='2019' then sum(actual.Total_Room_Revenue_Fin_EUR) END),0) as RRev_2LY,
+ ifnull((case WHEN actual.Production_Year='2022' then sum(actual.Total_Room_Revenue_Gross_EUR) END),0) as RRG_Current,
+ ifnull((case WHEN actual.Production_Year='2019' then sum(actual.Total_Room_Revenue_Gross_EUR) END),0) as RRG_2LY,
+ ifnull((case WHEN actual.Production_Year='2022' then sum(actual.Total_Room_Revenue_Net_EUR) END),0) as RRN_Current,
+ ifnull((case WHEN actual.Production_Year='2019' then sum(actual.Total_Room_Revenue_Net_EUR) END),0) as RRN_2LY,
+ ifnull((case WHEN actual.Production_Year='2022' then sum(actual.Room_Nights) END),0) as RN_Current,
+ ifnull((case WHEN actual.Production_Year='2021' then sum(actual.Room_Nights) END),0) as RN_LY,
+ ifnull((case WHEN actual.Production_Year='2023' then sum(actual.Room_Nights) END),0) as RN_20LY,
+ ifnull((case WHEN actual.Production_Year='2019' then sum(actual.Room_Nights) END),0) as RN_2LY,
+ifnull((case WHEN actual.Production_Year='2022' then sum(actual.Total_Revenue_Fin_LC) END),0) as TRev_Current_LC,
+ ifnull((case WHEN actual.Production_Year='2021' then sum(actual.Total_Revenue_Fin_LC) END),0) as TRev_LY_LC,
+ ifnull((case WHEN actual.Production_Year='2023' then sum(actual.Total_Revenue_Fin_LC) END),0) as TRev_20LY_LC,
+ ifnull((case WHEN actual.Production_Year='2019' then sum(actual.Total_Revenue_Fin_LC) END),0) as TRev_2LY_LC,
+ ifnull((case WHEN actual.Production_Year='2022' then sum(actual.Total_Room_Revenue_Fin_LC) END),0) as RRev_Current_LC,
+ ifnull((case WHEN actual.Production_Year='2021' then sum(actual.Total_Room_Revenue_Fin_LC) END),0) as RRev_LY_LC,
+ ifnull((case WHEN actual.Production_Year='2023' then sum(actual.Total_Room_Revenue_Fin_LC) END),0) as RRev_20LY_LC,
+ ifnull((case WHEN actual.Production_Year='2019' then sum(actual.Total_Room_Revenue_Fin_LC) END),0) as RRev_2LY_LC,
+
+
+
+FROM
+  `nh-spit-resevations.Commercial_Mirror.CM_Core_Extended`  actual
+  group by Production_Year
+)
