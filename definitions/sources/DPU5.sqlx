@@ -1,0 +1,44 @@
+config {
+  type: "table",
+  name: "ActualsSpitOTB_HotelMesSegmento_SubTable",
+  tags: ["SPIT", "Daily"]
+}
+
+
+SELECT
+Load_Date,
+Hotel_ID,
+Prod_Year_Month,
+RO_Market_Segment_Segmentation,
+RO_Reservation_Rate,
+Status_Reservation_Origin_ID,
+Room_Nights_wo_Day_Use_Wgt,
+Total_Revenue_FIN_EUR,
+Total_Room_Revenue_FIN_EUR,
+Total_FB_Revenue_FIN_EUR,
+Breakfast_Revenue_FIN_EUR,
+Total_Other_Revenue_FIN_EUR,
+Meetings_Room_Revenue_FIN_EUR,
+Total_Revenue_FIN_LC,
+Total_Room_Revenue_FIN_LC,
+Total_FB_Revenue_FIN_LC,
+Breakfast_Revenue_FIN_LC,
+Total_Other_Revenue_FIN_LC,
+Meetings_Room_Revenue_FIN_LC,
+Breakfast_Services,
+Top_Intermediary,
+Intermediary_Type,
+Commercial_Channel,
+Commercial_SubChannel,
+
+CASE
+WHEN Load_Date="2022-09-21" THEN "Today"
+WHEN Load_Date="2022-09-20" THEN "Yesterday"
+WHEN Load_Date="2022-09-14" THEN "WoW"
+### WHEN Load_Date="2022-08-24" THEN "MoM"
+WHEN Load_Date="2019-09-25" THEN "SPIT"
+
+END
+AS DATAFLAG
+FROM `nh-spit-resevations.Revenue_Revamp_Reports.New_ActualsSpitOTB_HotelMesSegmento`
+WHERE Load_Date IN ("2022-09-21","2022-09-20","2022-09-14","2019-09-25") #AND Prod_Year_Month > "2021-12"
