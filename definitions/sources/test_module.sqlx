@@ -1,3 +1,11 @@
 config {type: "table"}
 
-select * from nh-spit-resevations.wow_mom_process.wow_current where date > ${contants.first_date}
+select * from nh-spit-resevations.wow_mom_process.wow_current 
+where date > ${contants.first_date}
+
+testeo {
+ const foo = 1;
+ function bar(number){
+     return number+1;
+ }
+}
