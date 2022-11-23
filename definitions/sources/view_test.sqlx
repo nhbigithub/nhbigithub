@@ -1,0 +1,8 @@
+config {
+  type: "view",
+  name: "ViewTablefrom2",
+  tags: ["Commercial", "Create2"]
+}
+
+select * from ${ref("CreeateTable2")}
+where Production_Year='2022'
