@@ -11,9 +11,8 @@ SELECT
   Production_Year_Month,
   /*working week vs weekend*/
   Segment_Name,
-  Subsegment,
-  Subsegment_Cor_Detail,
-  Feeder_Market_ID,
+  Subsegment as segment-name,
+  Feeder_Market_ID as feeder_ID,
   sum(Total_Revenue_Fin_EUR) as TRev_FIN,
   sum(Total_Room_Revenue_Fin_EUR) as RRev_FIN,
   sum(Total_Revenue_Gross_EUR)as TRev_GROSS,
