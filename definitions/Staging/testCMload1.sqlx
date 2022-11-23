@@ -1,0 +1,27 @@
+config {
+  type: "table",
+  name: "CMload",
+  tags: ["Commercial", "fase1"]
+}
+
+
+SELECT
+  Hotel_ID,
+  Production_Year,
+  Production_Year_Month,
+  /*working week vs weekend*/
+  Segment_Name,
+  Subsegment,
+  Subsegment_Cor_Detail,
+  Feeder_Market_ID,
+  sum(Total_Revenue_Fin_EUR) as TRev_FIN,
+  sum(Total_Room_Revenue_Fin_EUR) as RRev_FIN,
+  sum(Total_Revenue_Gross_EUR)as TRev_GROSS,
+  sum(Total_Room_Revenue_Gross_EUR) as RRev_GROSS,
+  sum(Total_Revenue_Net_EUR) as TRev_NET,
+  sum(Total_Room_Revenue_Net_EUR) as RRev_NET,
+  sum(Room_Nights) as RN,
+  Reservation_Status_ID
+
+FROM
+  `nh-spit-resevations.Commercial_Mirror.CM_Core_Extended`
