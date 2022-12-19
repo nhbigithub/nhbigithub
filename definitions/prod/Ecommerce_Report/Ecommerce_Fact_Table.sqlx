@@ -1,0 +1,96 @@
+config { 
+  dependencies: [ "Ecommerce_dimensions" ],
+  tags: ["EcommerceReport"]
+}
+CREATE OR REPLACE TABLE`nh-spit-resevations.Ecommerce_Report.Ecomm_Fact_Table` AS
+SELECT
+  Hotel_Index,
+  Production_Date, 
+  Creation_Date,
+  Rate_Index,
+  Segment_Index,
+  Subsegment_Index,
+  Channel_Index,
+  Subchannel_Index,
+  Agency_Type_Index,
+  Intermediary_Index,
+  Feeder_Index,
+  Status_Index,
+  Discovery_Index,
+  Discovery_Program_Index,
+  Agency_Index,
+  TopCompany_Index,
+  round(sum(Total_Revenue_Fin_EUR),2) as Total_Revenue_Fin,
+  round(sum(Booked_Revenue_fin_eur),2) as Total_Booked_Revenue, -- booked revenue
+  round(sum(Total_Room_Revenue_Fin_EUR),2) as Total_Room_Revenue_Fin,
+  round(sum(Other_Revenue_Fin_Eur),2) AS Other_Revenue_Fin_Eur,
+  round(sum(Meetings_Room_Revenue_FIN_EUR),2) AS Meetings_Room_Revenue_FIN_EUR,
+  round(sum(FB_Revenue_Fin_EUR),2) AS FB_Revenue_Fin_EUR,
+  round(sum(Room_Nights),2) AS Room_Nights,
+  round(sum(Room_Nights_Booked),2) AS Room_Nights_Booked,
+  round(sum(Reservations_Wgt),2) AS Reservations_Wgt,
+  --Nueva parte del código para meter Date KPIS
+  CASE WHEN Lead_Time_Flag='Normal' THEN round(sum(Lead_Time_Reservation),2)
+       ELSE 0 END AS Lead_Time_Reservation,
+  CASE WHEN Lead_Time_Flag='Normal' THEN round(sum(Reservations_Wgt),2)
+       ELSE 0 END AS Reservation_Wgt_LT,
+  CASE WHEN LOS_Flag='Normal' THEN round(sum(Lenght_Stay_Reservation),2)
+       ELSE 0 END AS LOS_Reservation,
+  CASE WHEN LOS_Flag='Normal' THEN round(sum(Reservations_Wgt),2)
+       ELSE 0 END AS Reservation_Wgt_LOS
+  --round(sum(Lead_Time_Reservation),2) AS Lead_Time_Reservation,
+  --round(sum(Lenght_Stay_Reservation),2) AS Lenght_Stay_Reservation,
+  --round(sum(Reservations_Wgt),2) AS Reservations_Wgt,
+FROM
+  `nh-spit-resevations.Commercial_Mirror.CM_Core_Extended` CM
+-- JOIN with Hotel_MD
+LEFT JOIN `nh-spit-resevations.Ecommerce_Report.Dim_Hotel` Hotel ON CM.Hotel_ID=Hotel.Hotel_ID
+-- JOIN with Rates
+LEFT JOIN `nh-spit-resevations.Ecommerce_Report.Dim_Rates` Rate ON concat(CM.Hotel_ID,"-",CM.Rate_Code_ID)=Rate.Hotel_Rate_ID
+-- JOIN with Segments
+LEFT JOIN `nh-spit-resevations.Ecommerce_Report.Dim_Segment` Segment ON CASE WHEN CM.Segment is null then 'OTHE' ELSE CM.Segment END =Segment.Segment
+-- JOIN with Subsegment
+LEFT JOIN `nh-spit-resevations.Ecommerce_Report.Dim_Subsegment` Subsegment ON CM.Subsegment=Subsegment.Subsegment
+-- JOIN with Channel
+LEFT JOIN `nh-spit-resevations.Ecommerce_Report.Dim_Channel` Channel ON CM.Channel=Channel.Channel
+-- JOIN with Subchannel
+LEFT JOIN `nh-spit-resevations.Ecommerce_Report.Dim_Subchannel` Subchannel ON CM.Subchannel=Subchannel.Subchannel
+-- JOIN with Agency_Type
+LEFT JOIN `nh-spit-resevations.Ecommerce_Report.Dim_Agency_Type` Agency_Type ON CM.Agency_Type=Agency_Type.Agency_Type
+-- JOIN with Intermediary
+LEFT JOIN `nh-spit-resevations.Ecommerce_Report.Dim_Intermediary` Intermediary ON CM.Intermediary_Name=Intermediary.Intermediary_Name
+-- JOIN with Feeder Market
+LEFT JOIN `nh-spit-resevations.Ecommerce_Report.Dim_Feeder` Feeder ON CM.Feeder_Market_ID=Feeder.Feeder_Market_ID
+-- JOIN with Status
+LEFT JOIN `nh-spit-resevations.Ecommerce_Report.Dim_Status` Status ON CM.Reservation_Status_Name=Status.Status_Name
+-- JOIN to obtain Card 
+LEFT JOIN `nh-spit-resevations.Loyalty_Program_Info.MD_Loyalty_Clients_Format_Adjusted` Discovery
+ON Discovery.Discovery_client_ID=CM.Guest_ID
+-- JOIN with Discovery_Cards_MD
+LEFT JOIN `nh-spit-resevations.Ecommerce_Report.Dim_Discovery_Cards` Cards ON CASE WHEN Discovery.Discovery_Category is null THEN 'No_Loyalty' ELSE Discovery.Discovery_Category END =Cards.Discovery_Category
+-- JOIN with Discovery_Program_MD
+LEFT JOIN `nh-spit-resevations.Ecommerce_Report.Dim_Discovery_Program` Program ON CONCAT(CASE WHEN Discovery.Discovery_Program is null THEN 'No_Loyalty' ELSE Discovery.Discovery_Program END,'-',CASE WHEN Discovery.Discovery_Enrollment_Brand is null THEN 'UNKNOWN' ELSE Discovery.Discovery_Enrollment_Brand END) = CONCAT(Program.Discovery_Program,'-',Program.Discovery_Enrollment_Brand)
+-- JOIN with Agencies
+LEFT JOIN `nh-spit-resevations.Ecommerce_Report.Dim_Agencies` Agencies ON CM.Agency_Global_ID=Agencies.agency_global_ID
+-- JOIN with Top_Company
+LEFT JOIN `nh-spit-resevations.Ecommerce_Report.Dim_TopB2BCompany` TopCompany ON CM.Company_Global_ID=TopCompany.Company_Global_ID
+where Production_Year IN ('2019', '2021', '2022','2023')
+GROUP BY 
+  Hotel_Index,
+  Production_Date,
+  Creation_Date,
+  Rate_Index,
+  Segment_Index,
+  Subsegment_Index,
+  Channel_Index,
+  Subchannel_Index,
+  Agency_Type_Index,
+  Intermediary_Index,
+  Feeder_Index,
+  Status_Index,
+  Discovery_Index,
+  Discovery_Program_Index,
+  Agency_Index,
+  TopCompany_Index,
+  Lead_Time_Flag,
+  LOS_Flag

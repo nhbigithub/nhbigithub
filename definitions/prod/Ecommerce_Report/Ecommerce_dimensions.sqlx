@@ -1,0 +1,225 @@
+config {
+  tags: ["EcommerceReport"]
+}
+
+-- Create channel dimension table
+CREATE OR REPLACE TABLE`nh-spit-resevations.Ecommerce_Report.Dim_Channel` AS
+WITH
+  channel_dim AS (
+  SELECT
+    DISTINCT channel
+  FROM
+    `nh-spit-resevations.Commercial_Mirror.CM_Core_Extended`)
+SELECT
+  ROW_NUMBER() OVER (ORDER BY channel ASC) as Channel_index,
+  channel
+FROM
+  channel_dim;
+  
+-- Create Subchannel dimension table
+CREATE OR REPLACE TABLE`nh-spit-resevations.Ecommerce_Report.Dim_Subchannel` AS
+WITH
+  subchannel_dim AS (
+  SELECT
+    DISTINCT subchannel
+  FROM
+    `nh-spit-resevations.Commercial_Mirror.CM_Core_Extended`)
+SELECT
+  ROW_NUMBER() OVER (ORDER BY subchannel ASC) as Subchannel_index,
+  subchannel
+FROM
+  subchannel_dim;
+  
+-- Create Feeder Market dimension table
+CREATE OR REPLACE TABLE`nh-spit-resevations.Ecommerce_Report.Dim_Feeder` AS
+WITH
+  feeder_dim AS (
+  select distinct Feeder_Market_ID, Feeder.Country_Name, Feeder.Feeder_Market_BU, Feeder.Feeder_Market_Sub_BU 
+  FROM `nh-spit-resevations.Commercial_Mirror.CM_Core_Extended` CM
+LEFT JOIN `nh-spit-resevations.bbdd_maestros.MD_Feeder_Market_Format` Feeder
+ON Feeder.Country_ID=CM.Feeder_Market_ID)
+SELECT ROW_NUMBER() OVER (ORDER BY Feeder_Market_ID ASC) as Feeder_index,
+Feeder_Market_ID,
+Country_Name,
+Feeder_Market_BU,
+Feeder_Market_Sub_BU
+FROM feeder_dim;
+
+-- Create Rates dimension table
+CREATE OR REPLACE TABLE`nh-spit-resevations.Ecommerce_Report.Dim_Rates` AS
+WITH
+  rate_dim AS (
+  select concat(Hotel_Rate, "-", Rate_ID) as Hotel_Rate_ID,hotel_Rate, rate_id, rate_prepayment
+  FROM `nh-spit-resevations.bbdd_maestros.MD_RateCode_Agg`)
+SELECT
+  ROW_NUMBER() OVER (ORDER BY Hotel_Rate_ID ASC) as Rate_index,
+  Hotel_Rate_ID,
+  hotel_Rate,
+  rate_id,
+  rate_prepayment
+FROM
+  rate_dim;
+
+-- Create Segment dimension table
+CREATE OR REPLACE TABLE
+  `nh-spit-resevations.Ecommerce_Report.Dim_Segment` AS
+WITH
+  segment_tbl AS (
+  SELECT DISTINCT
+    CASE WHEN segment is null THEN 'OTHE'
+    ELSE segment END AS segment,
+    CASE WHEN Segment_Name is null THEN 'Other'
+    ELSE Segment_Name END AS Segment_Name,
+    CASE WHEN segment_type is null THEN 'B2B'
+    ELSE Segment_Type END AS segment_type
+  FROM `nh-spit-resevations.Commercial_Mirror.CM_Core_Extended`)
+SELECT
+  ROW_NUMBER() OVER (ORDER BY segment ASC) AS Segment_index,
+  segment,
+  Segment_Name,
+  segment_type
+FROM
+  segment_tbl;
+  
+-- Create Status dimension table
+CREATE OR REPLACE TABLE`nh-spit-resevations.Ecommerce_Report.Dim_Status` AS(
+select distinct cast(reservation_status_ID AS NUMERIC) as Status_Index, Reservation_Status_Name as Status_Name
+FROM `nh-spit-resevations.Commercial_Mirror.CM_Core_Extended`);
+
+-- Create Subsegment dimension table
+CREATE OR REPLACE TABLE
+  `nh-spit-resevations.Ecommerce_Report.Dim_Subsegment` AS
+WITH
+  subsegment_tbl AS (
+  SELECT
+    DISTINCT subsegment
+  FROM
+    `nh-spit-resevations.Commercial_Mirror.CM_Core_Extended`)
+SELECT
+  ROW_NUMBER() OVER (ORDER BY subsegment ASC) AS Subsegment_index,
+  Subsegment
+FROM
+  subsegment_tbl;
+  
+-- Create Hotels dimension table  
+CREATE OR REPLACE TABLE `nh-spit-resevations.Ecommerce_Report.Dim_Hotel` AS
+WITH
+  hotel_dim AS (
+    select distinct CM.hotel_ID, CM.Hotel_Name, Hotel.Hotel_Comparable, Hotel.Hotel_Consolidated, Hotel.Hotel_BU, Hotel.Hotel_Sub_BU, Hotel.Hotel_Country, Hotel.Hotel_City,
+  Hotel.Hotel_Status, Hotel.Hotel_Brand, Hotel.Hotel_Portfolio, Hotel.GOP_Contributors, Hotel.Hotel_Cluster, Hotel.Hotel_Ops_Regional
+  FROM `nh-spit-resevations.Commercial_Mirror.CM_Core_Extended` CM
+  LEFT JOIN `nh-spit-resevations.bbdd_maestros.MD_Hotel_Format` Hotel ON CM.Hotel_ID=Hotel.Hotel_ID)
+SELECT
+  ROW_NUMBER() OVER (ORDER BY Hotel_ID  ASC) as hotel_index,
+  Hotel_ID,
+  Hotel_Name,
+  Hotel_Comparable,
+  Hotel_Consolidated,
+  Hotel_BU,
+  Hotel_Sub_BU,
+  Hotel_Country,
+  Hotel_City,
+  Hotel_Status,
+  Hotel_Brand,
+  Hotel_Portfolio,
+  GOP_Contributors,
+  Hotel_Cluster,
+  Hotel_Ops_Regional
+FROM hotel_dim;
+
+-- Create Agency Dimension table
+CREATE OR REPLACE TABLE`nh-spit-resevations.Ecommerce_Report.Dim_Agency_Type` AS
+WITH
+  Agency_dim AS (
+  select distinct Agency_Type,FROM `nh-spit-resevations.Commercial_Mirror.CM_Core_Extended` CM)
+SELECT ROW_NUMBER() OVER (ORDER BY Agency_Type ASC) as Agency_Type_index,
+Agency_Type
+FROM Agency_dim;
+
+-- Create Discovery_Cards Dimension table
+CREATE OR REPLACE TABLE`nh-spit-resevations.Ecommerce_Report.Dim_Discovery_Cards` AS
+WITH
+  Discovery_dim AS (
+  select distinct Discovery_Category
+  FROM `nh-spit-resevations.Commercial_Mirror.CM_Core_Extended` CM
+LEFT JOIN `nh-spit-resevations.Loyalty_Program_Info.MD_Loyalty_Clients_Format_Adjusted` Discovery
+ON Discovery.Discovery_client_ID=CM.Guest_ID)
+SELECT ROW_NUMBER() OVER (ORDER BY Discovery_Category ASC) as Discovery_Index,
+CASE WHEN Discovery_Category is null then 'No_Loyalty'
+     ELSE Discovery_Category END AS Discovery_Category
+FROM Discovery_dim;
+
+
+-- Create Agencies Dimension table
+CREATE OR REPLACE TABLE`nh-spit-resevations.Ecommerce_Report.Dim_Agencies` AS
+WITH
+  agency_dim AS (
+  select distinct Agency_global_ID, agency_global_name
+    FROM `nh-spit-resevations.Commercial_Mirror.CM_Core_Extended`)
+SELECT
+  ROW_NUMBER() OVER (ORDER BY Agency_global_ID ASC) as Agency_index,
+  Agency_Global_ID,
+  agency_global_name
+FROM
+  agency_dim;
+
+--Create top B2B Companies Dimension table
+CREATE OR REPLACE TABLE`nh-spit-resevations.Ecommerce_Report.Dim_TopB2BCompany` AS
+WITH
+  topcompany_dim AS (
+  SELECT
+  MDCompany.Company_Global_ID,
+  MDCompany.Company_Global_Name,
+  CASE WHEN channel='B2B Digital' THEN SUM(Total_Revenue_Fin_EUR) ELSE 0 END AS Total_Rev_B2B
+FROM
+  `nh-spit-resevations.Commercial_Mirror.CM_Core_Extended` AS TOPCompany
+LEFT JOIN (
+  SELECT
+    Company_Global_ID,
+    Company_Global_Name
+  FROM
+    `nh-spit-resevations.bbdd_maestros.MD_Company_Format`
+  GROUP BY
+    Company_Global_ID,
+    Company_Global_Name ) AS MDCompany
+ON
+  TOPCompany.Company_Global_ID=MDCompany.Company_Global_ID
+WHERE
+  (CAST (Production_Year AS NUMERIC)=EXTRACT(year
+    FROM
+      CURRENT_DATE())
+    OR CAST (Creation_Year AS NUMERIC)=EXTRACT(year
+    FROM
+      CURRENT_DATE()))
+  AND MDCompany.Company_Global_ID IS NOT NULL
+GROUP BY
+  MDCompany.Company_Global_ID,
+  channel,
+  MDCompany.Company_Global_Name
+ORDER BY
+  Total_Rev_B2B DESC
+LIMIT
+  20)
+SELECT
+  ROW_NUMBER() OVER (ORDER BY Company_Global_Name ASC) as TopCompany_index,
+  Company_Global_ID,
+  Company_Global_Name as TopB2BCompany
+FROM
+  topcompany_dim;
+
+-- Create Discovery_Program_Dimension
+CREATE OR REPLACE TABLE`nh-spit-resevations.Ecommerce_Report.Dim_Discovery_Program` AS
+WITH
+  Discovery_dim_program AS (
+  select distinct Discovery_Program, Discovery_Enrollment_Brand,CASE WHEN  discovery_program = 'GHA_DISCOVERY' AND Discovery_Enrollment_Brand='OTHERS' THEN 'GHA Discovery'
+     WHEN discovery_program = 'GHA_DISCOVERY' THEN 'MINOR Discovery'
+     WHEN Discovery_Enrollment_Brand IN ('AVANI','ANANTARA','TIVOLI') THEN 'MINOR Discovery'
+     ELSE 'NH Discovery' END AS Loyalty_Program
+  FROM `nh-spit-resevations.Commercial_Mirror.CM_Core_Extended` CM
+LEFT JOIN `nh-spit-resevations.Loyalty_Program_Info.MD_Loyalty_Clients_Format_Adjusted` Discovery
+ON Discovery.Discovery_client_ID=CM.Guest_ID)
+SELECT ROW_NUMBER() OVER (ORDER BY Discovery_Program ASC) as Discovery_Program_Index,
+CASE WHEN Discovery_Program is null then 'No_Loyalty' ELSE Discovery_Program END AS Discovery_Program,
+CASE WHEN Discovery_Enrollment_Brand is null then 'UNKNOWN' ELSE Discovery_Enrollment_Brand END AS Discovery_Enrollment_Brand,
+CASE WHEN Discovery_Program is null then 'No_Loyalty' ELSE Loyalty_Program END AS Loyalty_Program
+FROM Discovery_dim_program;
