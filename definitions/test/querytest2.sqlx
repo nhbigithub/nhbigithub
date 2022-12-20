@@ -6,15 +6,7 @@
  
   select
   Subchannel,
-  Channel_Mix,
-  Subchannel_Mix,
-  sum(Total_Revenue_Fin_EUR) as TRev_FIN,
-  sum(Total_Room_Revenue_Fin_EUR) as RRev_FIN,
-  sum(Total_Revenue_Gross_EUR)as TRev_GROSS,
-  sum(Total_Room_Revenue_Gross_EUR) as RRev_GROSS,
-  sum(Total_Revenue_Net_EUR) as TRev_NET,
-  sum(Total_Room_Revenue_Net_EUR) as RRev_NET,
-  sum(Room_Nights) as RN
+  Channel_Mix
 
 FROM ${ref("tablaejemplo1")}
 
