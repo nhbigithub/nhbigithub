@@ -1,0 +1,8 @@
+config {
+  type: "view",
+  name: "test33",
+  tags: ["test2", "test"]
+}
+
+select * from ${ref("testdelete")}
+  where channel_mix='IND-TO'

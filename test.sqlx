@@ -1,0 +1,25 @@
+config {
+  type: "table",
+  name: "testdelete",
+  tags: ["test1", "test"]
+}
+
+  select
+  Subchannel,
+  Channel_Mix,
+  Subchannel_Mix,
+  sum(Total_Revenue_Fin_EUR) as TRev_FIN,
+  sum(Total_Room_Revenue_Fin_EUR) as RRev_FIN,
+  sum(Total_Revenue_Gross_EUR)as TRev_GROSS,
+  sum(Total_Room_Revenue_Gross_EUR) as RRev_GROSS,
+  sum(Total_Revenue_Net_EUR) as TRev_NET,
+  sum(Total_Room_Revenue_Net_EUR) as RRev_NET,
+  sum(Room_Nights) as RN
+
+FROM
+  `nh-spit-resevations.Commercial_Mirror.CM_Core_Extended`
+
+  where channel_mix='IND-TO'
+
+  group by subchannel, Channel_Mix,
+  Subchannel_Mix
