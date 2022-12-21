@@ -1,0 +1,53 @@
+config {
+  type: "table",
+  name: "ActualsSpitOTB",
+  tags: ["DPU", "Daily"]
+}
+
+SELECT
+Load_Date,
+Hotel_ID,
+Prod_Year_Month,
+RO_Market_Segment_Segmentation,
+Status_Reservation_Origin_ID,
+SUM(Room_Nights_wo_Day_Use_Wgt) AS Room_Nights_wo_Day_Use_Wgt,
+SUM(Total_Revenue_FIN_EUR) AS Total_Revenue_FIN_EUR,
+SUM(Total_Room_Revenue_FIN_EUR) AS Total_Room_Revenue_FIN_EUR,
+SUM(Total_FB_Revenue_FIN_EUR) AS Total_FB_Revenue_FIN_EUR,
+SUM(Breakfast_Revenue_FIN_EUR) AS Breakfast_Revenue_FIN_EUR,
+SUM(Total_Other_Revenue_FIN_EUR) AS Total_Other_Revenue_FIN_EUR,
+SUM(Meetings_Room_Revenue_FIN_EUR) AS Meetings_Room_Revenue_FIN_EUR,
+SUM(Total_Revenue_FIN_LC) AS Total_Revenue_FIN_LC,
+SUM(Total_Room_Revenue_FIN_LC) AS Total_Room_Revenue_FIN_LC,
+SUM(Total_FB_Revenue_FIN_LC) AS Total_FB_Revenue_FIN_LC,
+SUM(Breakfast_Revenue_FIN_LC) AS Breakfast_Revenue_FIN_LC,
+SUM(Total_Other_Revenue_FIN_LC) AS Total_Other_Revenue_FIN_LC,
+SUM(Meetings_Room_Revenue_FIN_LC) AS Meetings_Room_Revenue_FIN_LC,
+SUM(Breakfast_Services) AS Breakfast_Services,
+Top_Intermediary,
+Intermediary_Type,
+Commercial_Channel,
+Commercial_SubChannel,
+
+CASE
+WHEN Load_Date=CURRENT_DATE()-1 THEN "Today" 
+WHEN Load_Date=CURRENT_DATE()-2 THEN "Yesterday"  
+WHEN Load_Date=CURRENT_DATE()-8 THEN "WoW" 
+WHEN Load_Date=CURRENT_DATE()-1093 THEN "SPIT"  
+WHEN Load_Date=CURRENT_DATE()-1100 THEN "SPIT_LW" 
+
+END
+AS DATAFLAG
+FROM `nh-spit-resevations.Revenue_Revamp_Reports.New_ActualsSpitOTB_HotelMesSegmento`
+WHERE Load_Date IN (CURRENT_DATE()-1,CURRENT_DATE()-2,CURRENT_DATE()-8,CURRENT_DATE()-1093,CURRENT_DATE()-1100) 
+
+GROUP BY
+Load_Date,
+Hotel_ID,
+Prod_Year_Month,
+RO_Market_Segment_Segmentation,
+Status_Reservation_Origin_ID,
+Top_Intermediary,
+Intermediary_Type,
+Commercial_Channel,
+Commercial_SubChannel

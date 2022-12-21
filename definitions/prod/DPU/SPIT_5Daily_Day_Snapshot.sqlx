@@ -1,0 +1,51 @@
+
+INSERT INTO `nh-spit-resevations.Revenue_Revamp_Reports.New_Actuals_SpitOTB_HotelDiaSegmento`
+
+SELECT
+CURRENT_DATE()-1 AS Load_Date, 
+Hotel_ID,
+FORMAT_DATE("%Y-%m-%d", Production_Date) as Prod_Year_Month,
+Segment AS RO_Market_Segment_Segmentation,
+Rate_Code_ID AS RO_Reservation_Rate,
+Reservation_Status_ID AS Status_Reservation_Origin_ID,
+
+SUM(Room_Nights) AS Room_Nights_wo_Day_Use_Wgt,
+SUM(Total_Revenue_Fin_EUR) AS Total_Revenue_FIN_EUR,
+SUM(Total_Room_Revenue_Fin_EUR) AS Total_Room_Revenue_FIN_EUR,
+SUM(FB_Revenue_Fin_EUR) AS Total_FB_Revenue_FIN_EUR,
+SUM(Breakfast_Revenue_Fin_EUR) AS Breakfast_Revenue_FIN_EUR,
+SUM(Other_Revenue_Fin_EUR) AS Total_Other_Revenue_FIN_EUR,
+SUM(Meetings_Room_Revenue_Fin_EUR) AS Meetings_Room_Revenue_FIN_EUR,
+
+SUM(Total_Revenue_Fin_LC) AS Total_Revenue_FIN_LC,
+SUM(Total_Room_Revenue_Fin_LC) AS Total_Room_Revenue_FIN_LC,
+SUM(Total_FB_Revenue_Fin_LC) AS Total_FB_Revenue_FIN_LC,
+SUM(Breakfast_Revenue_Fin_LC) AS Breakfast_Revenue_FIN_LC,
+SUM(Total_Other_Revenue_Fin_LC) AS Total_Other_Revenue_FIN_LC,
+SUM(Meetings_Room_Revenue_Fin_LC) AS Meetings_Room_Revenue_FIN_LC,
+
+SUM(Breakfast_Services),
+
+TOP_INTER.TOP_Intermediary,
+TOP_INTER.Intermediary_Type,
+Channel AS Commercial_Channel,
+Subchannel AS Commercial_Subchannel
+
+FROM `nh-spit-resevations.Commercial_Mirror.CM_Core_Extended` AS CM_Extended
+
+LEFT JOIN `nh-spit-resevations.bbdd_maestros.BBDD_GID_Intermediarios_conect` AS TOP_INTER ON 
+CM_Extended.Agency_ID = TOP_INTER.GID
+    WHERE Production_Date > "2018-12-31"
+
+GROUP BY
+
+      Load_Date,
+      Hotel_ID,
+      Prod_Year_Month,
+      RO_Market_Segment_Segmentation,
+      RO_Reservation_Rate,
+      Status_Reservation_Origin_ID,
+      TOP_Intermediary,
+      Intermediary_Type,
+      COMMERCIAL_CHANNEL, 
+      COMMERCIAL_SUBCHANNEL
