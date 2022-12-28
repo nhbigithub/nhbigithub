@@ -1,7 +1,8 @@
 config {
-  tags: ["CM_Emergency", "Commercial_Mirror"],
-  dependencies: ["CM_Raw_Emergency"]
+  dependencies: ["CM_Raw_Emergency"],
+  tags: ["CM_Emergency", "Commercial_Mirror"]
 }
+
 CREATE OR REPLACE TABLE `nh-spit-resevations.Commercial_Mirror.CM_Core_Extended` AS
 SELECT
 
