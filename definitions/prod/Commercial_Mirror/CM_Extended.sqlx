@@ -1,5 +1,5 @@
 config {
-  dependencies:["CM_Core_Raw"],
+  dependencies:["CM_Core_Raw","MD_Commercial_Logic_Format"],
   tags: ["CM_Emergency", "Commercial_Mirror"]
 }
 

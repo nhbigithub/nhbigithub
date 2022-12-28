@@ -1,0 +1,25 @@
+config {
+  type: "table",
+  schema: "bbdd_maestros",
+  name: "MD_Commercial_Logic_Format",
+  tags: ["CM_Emergency"]
+}
+
+SELECT DISTINCT 
+  IFNULL ( RO_Channel_ID , '' ) AS RO_Channel_ID,
+  IFNULL ( RO_Subchannel_ID ,'' ) AS RO_Subchannel_ID,
+  IFNULL ( Reservation_DoneBy_ID ,'' ) AS Reservation_DoneBy_ID,
+  IFNULL ( RO_CRO_Queue , '' ) AS RO_CRO_Queue,
+  IFNULL ( CRO_Web_Category , '' ) AS CRO_Web_Category, -- nuevo campo
+  IFNULL ( RO_Intermediary_ID ,'' ) AS RO_Intermediary_ID,
+  IFNULL ( RO_Reservation_type ,'' ) AS RO_Reservation_type, -- nuevo campo
+  IFNULL ( Market_Segment ,'' ) AS Market_Segment,
+  IFNULL ( Market_Subsegment ,'' ) AS Market_Subsegment,
+  IFNULL ( Rate_Code_ID ,'' ) AS Rate_Code_ID,
+  IFNULL ( Commercial_Subsegment ,'' ) AS Commercial_Subsegment,
+  IFNULL ( Commercial_Subchannel ,'' ) AS Commercial_Subchannel,
+  IFNULL ( Commercial_Channel ,'' ) AS Commercial_Channel
+
+FROM
+`nh-spit-resevations.bbdd_maestros.MD_Commercial_Logic` 
+WHERE IFNULL ( Commercial_Channel ,'' )<>''  
