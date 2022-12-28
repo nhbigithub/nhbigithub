@@ -3,7 +3,7 @@ config {
   tags: ["CM_Emergency", "Commercial_Mirror"]
 }
 
-CREATE OR REPLACE TABLE `nh-spit-resevations.dataform.CM_Core_Extended` AS
+CREATE OR REPLACE TABLE `nh-spit-resevations.Commercial_Mirror.CM_Core_Extended` AS
 SELECT
 
 -- <<HOTEL CATEGORY>>
