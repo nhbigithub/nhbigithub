@@ -1,0 +1,164 @@
+config {
+  type: "table",
+  schema:"Commercial_Mirror",
+  name: "CM_Core_Raw",
+  tags: ["CM_Emergency"]
+}
+
+
+SELECT 
+
+  Hotel_ID,
+  Reservation_ID,
+  CAST(PARSE_DATE('%x',NULLIF(REPLACE( Production_Date ,'?',''),'')) AS DATE) AS Production_Date,
+  NULLIF(REPLACE(Reservation_Type_ID, '?' , ''),'') AS Reservation_Type_ID,
+  NULLIF(REPLACE(Reservation_Group_ID, '?' , ''),'') AS Reservation_Group_ID,
+  NULLIF(REPLACE(Booking_File_ID, '?' , ''),'') AS Booking_File_ID,
+  CAST(PARSE_DATE('%x',NULLIF(REPLACE( Creation_Date ,'?',''),'')) AS DATE) AS Creation_Date,
+  CASE WHEN (NULLIF(REPLACE(Booking_File_ID, '?' , ''),'')) IS NOT NULL AND (PARSE_DATE('%Y%m%d',NULLIF(NULLIF(REPLACE( BF_Creation_Date ,'?',''),''),"00000000"))) IS NOT NULL 
+  THEN PARSE_DATE('%Y%m%d',NULLIF(NULLIF(REPLACE( BF_Creation_Date ,'?',''),''),"00000000")) 
+  ELSE CAST(PARSE_DATE('%x',NULLIF(REPLACE( Creation_Date ,'?',''),'')) AS DATE) END AS Creation_Date_New, 
+  CAST(PARSE_DATE('%x',NULLIF(REPLACE( Check_In_Date ,'?',''),'')) AS DATE) AS Check_In_Date,
+  CAST(PARSE_DATE('%x',NULLIF(REPLACE( Check_Out_Date ,'?',''),'')) AS DATE) AS Check_Out_Date,
+  CAST(PARSE_DATE('%x',NULLIF(REPLACE( CXL_Date_Origin ,'?',''),'')) AS DATE) AS CXL_Date_Origin,
+  NULLIF(REPLACE(Reservation_Status_ID, '?' , ''),'') AS Reservation_Status_ID,
+  NULLIF(REPLACE(Previous_Reservation_Status_ID, '?' , ''),'') AS Previous_Reservation_Status_ID,
+  NULLIF(REPLACE(BF_Status_Id, '?' , ''),'') AS BF_Status_Id,
+  PARSE_DATE('%Y%m%d',NULLIF(NULLIF(REPLACE( BF_Start_Date ,'?',''),''),"00000000")) AS BF_Start_Date,
+  PARSE_DATE('%Y%m%d',NULLIF(NULLIF(REPLACE( BF_End_Date ,'?',''),''),"00000000")) AS BF_End_Date,
+  PARSE_DATE('%Y%m%d',NULLIF(NULLIF(REPLACE( BF_Creation_Date ,'?',''),''),"00000000")) AS BF_Creation_Date,
+  PARSE_DATE('%Y%m%d',NULLIF(NULLIF(REPLACE( BF_Cancellation_Date ,'?',''),''),"00000000")) AS BF_Cancellation_Date,
+  PARSE_DATE('%Y%m%d',NULLIF(NULLIF(REPLACE( BF_Confirmation_Date ,'?',''),''),"00000000")) AS BF_Confirmation_Date,
+  PARSE_DATE('%Y%m%d',NULLIF(NULLIF(REPLACE( BF_Last_Change_Date ,'?',''),''),"00000000")) AS BF_Last_Change_Date,
+  CAST(PARSE_DATE('%x',NULLIF(REPLACE( Reservation_Modification_Date ,'?',''),'')) AS DATE) AS Reservation_Modification_Date,
+  Market_Segment_ID,
+  Market_Subsegment_ID,
+  Rate_Code_ID,
+  NULLIF(REPLACE(RO_Channel_ID, '?' , ''),'') AS RO_Channel_ID,
+  NULLIF(REPLACE(RO_Subchannel_ID, '?' , ''),'') AS RO_Subchannel_ID,
+  RO_CRO_Queue,
+  Reservation_Done_By_ID,
+  Reservation_Done_By_Name,
+  RO_Intermediary_ID,
+  NULLIF(REPLACE(RO_Guarantee_Category, '?' , ''),'') AS RO_Guarantee_Category,
+  NULLIF(REPLACE(RoomType_Generic_Contracted, '?' , ''),'') AS RoomType_Generic_Contracted,
+  NULLIF(REPLACE(RoomType_Generic_Upgrade, '?' , ''),'') AS RoomType_Generic_Upgrade,
+  NULLIF(REPLACE(RoomType_Generic, '?' , ''),'') AS RoomType_Generic_Produced,
+  IF (REPLACE(RoomType_Generic_Contracted, '?' , '')<>"" AND REPLACE(RoomType_Generic_Contracted, '?' , '')<>'XVIRTUA',REPLACE(RoomType_Generic_Contracted, '?' , ''),
+    IF(REPLACE(RoomType_Generic_Upgrade, '?' , '') <> 'XVIRTUA' AND REPLACE(RoomType_Generic_Upgrade, '?' , '')<> "",REPLACE(RoomType_Generic_Upgrade, '?' , ''),
+        IF(REPLACE(RoomType_Generic, '?' , '')<>"XVIRTUA" AND REPLACE(RoomType_Generic, '?' , '') <> "",REPLACE(RoomType_Generic, '?' , ''),NULL))) AS RoomType_Contracted,
+  IF (REPLACE(RoomType_Generic_Upgrade, '?' , '')<>"" AND REPLACE(RoomType_Generic_Upgrade, '?' , '')<>'XVIRTUA',REPLACE(RoomType_Generic_Upgrade, '?' , ''),
+    IF(REPLACE(RoomType_Generic, '?' , '') <> 'XVIRTUA' AND REPLACE(RoomType_Generic, '?' , '')<> "",REPLACE(RoomType_Generic, '?' , ''),
+        IF(REPLACE(RoomType_Generic_Contracted, '?' , '')<>"XVIRTUA" AND REPLACE(RoomType_Generic_Contracted, '?' , '') <> "",REPLACE(RoomType_Generic_Contracted, '?' , ''),NULL))) AS RoomType_Upgrade,
+  IF (REPLACE(RoomType_Generic, '?' , '')<>"" AND REPLACE(RoomType_Generic, '?' , '')<>'XVIRTUA',REPLACE(RoomType_Generic, '?' , ''),
+    IF(REPLACE(RoomType_Generic_Upgrade, '?' , '') <> 'XVIRTUA' AND REPLACE(RoomType_Generic_Upgrade, '?' , '')<> "",REPLACE(RoomType_Generic_Upgrade, '?' , ''),
+        IF(REPLACE(RoomType_Generic_Contracted, '?' , '')<>"XVIRTUA" AND REPLACE(RoomType_Generic_Contracted, '?' , '') <> "",REPLACE(RoomType_Generic_Contracted, '?' , ''),NULL))) AS RoomType_Produced,
+  Room_Number,
+  NULLIF(REPLACE(MealPlan_Contracted_ID, '?' , ''),'') AS MealPlan_Contracted_ID,
+  NULLIF(REPLACE(MealPlan_Upgrade_ID, '?' , ''),'') AS MealPlan_Upgrade_ID,
+  NULLIF(REPLACE(RO_Commercial_Client_ID, '?' , ''),'') AS RO_Commercial_Client_ID,
+  Agency_ID,
+  Company_ID,
+  Intermediary_ID,
+  NULLIF(REPLACE(RO_Main_Guest_ID, '?' , ''),'') AS RO_Main_Guest_ID,
+  NULLIF(REPLACE(RO_Guest_Country_ID, '?' , ''),'') AS RO_Guest_Country_ID,
+  GQ_Branch_Agency_ID,
+  GQ_Branch_Company_ID,
+  RD_Commercial_Client_ID,
+  RD_Branch_Commercial_Client_ID,
+  CAST(REPLACE(REPLACE(REPLACE( Room_Nights ,'?','0'),'','0'),',','') AS NUMERIC) AS Room_Nights,
+  CAST(REPLACE(REPLACE(REPLACE( Room_Nights_CXL ,'?','0'),'','0'),',','') AS NUMERIC) AS Room_Nights_CXL,
+  CAST(REPLACE(REPLACE(REPLACE( Room_Nights_No_Show ,'?','0'),'','0'),',','') AS NUMERIC) AS Room_Nights_No_Show,
+  CAST(REPLACE(REPLACE(REPLACE( Total_Revenue_Fin_LC ,'?','0'),'','0'),',','') AS NUMERIC) AS Total_Revenue_Fin_LC,
+  CAST(IFNULL(NULLIF( Total_Room_Revenue_Fin_LC ,''),'0') AS NUMERIC) AS Total_Room_Revenue_Fin_LC,
+  CAST(IFNULL(NULLIF( Total_FB_Revenue_Fin_LC ,''),'0') AS NUMERIC) AS Total_FB_Revenue_Fin_LC,
+  CAST(IFNULL(NULLIF( Total_Other_Revenue_Fin_LC ,''),'0') AS NUMERIC) AS Total_Other_Revenue_Fin_LC,
+  CAST(IFNULL(NULLIF( Meetings_Room_Revenue_Fin_LC ,''),'0') AS NUMERIC) AS Meetings_Room_Revenue_Fin_LC,
+  CAST(IFNULL(NULLIF( Room_Revenue_Fin_LC ,''),'0') AS NUMERIC) AS Room_Revenue_Fin_LC,
+  CAST(IFNULL(NULLIF(Breakfast_Revenue_Fin_LC ,''),'0') AS NUMERIC) AS Breakfast_Revenue_Fin_LC,
+  CAST(IFNULL(NULLIF(Other_FB_Revenue_Fin_LC ,''),'0') AS NUMERIC) AS Other_FB_Revenue_Fin_LC,
+  CAST(IFNULL(NULLIF(CXL_Revenue_Fin_LC,''),'0') AS NUMERIC) AS CXL_Revenue_Fin_LC,
+  CAST(IFNULL(NULLIF(No_Show_Revenue_Fin_LC ,''),'0') AS NUMERIC) AS No_Show_Revenue_Fin_LC,
+  CAST(IFNULL(NULLIF(Room_Potential_CXL_Value_Fin_LC ,''),'0') AS NUMERIC) AS Room_Potential_CXL_Value_Fin_LC,
+  CAST(IFNULL(NULLIF(Room_Potential_No_Show_Value_Fin_LC ,''),'0') AS NUMERIC) AS Room_Potential_No_Show_Value_Fin_LC,
+  CAST(IFNULL(NULLIF(Total_Revenue_Gross_LC ,''),'0') AS NUMERIC) AS Total_Revenue_Gross_LC,
+  CAST(IFNULL(NULLIF(Total_Room_Revenue_Gross_LC ,''),'0') AS NUMERIC) AS Total_Room_Revenue_Gross_LC,
+  CAST(IFNULL(NULLIF(Total_FB_Revenue_Gross_LC ,''),'0') AS NUMERIC) AS Total_FB_Revenue_Gross_LC,
+  CAST(IFNULL(NULLIF(Total_Other_Revenue_Gross_LC ,''),'0') AS NUMERIC) AS Total_Other_Revenue_Gross_LC,
+  CAST(IFNULL(NULLIF(Meetings_Room_Revenue_Gross_LC ,''),'0') AS NUMERIC) AS Meetings_Room_Revenue_Gross_LC,
+  CAST(IFNULL(NULLIF(Total_Revenue_Net_LC ,''),'0') AS NUMERIC) AS Total_Revenue_Net_LC,
+  CAST(IFNULL(NULLIF(Total_Room_Revenue_Net_LC ,''),'0') AS NUMERIC) AS Total_Room_Revenue_Net_LC,
+  CAST(IFNULL(NULLIF(Total_FB_Revenue_Net_LC,''),'0') AS NUMERIC) AS Total_FB_Revenue_Net_LC,
+  CAST(IFNULL(NULLIF(Total_Other_Revenue_Net_LC,''),'0') AS NUMERIC) AS Total_Other_Revenue_Net_LC,
+  CAST(IFNULL(NULLIF(Meetings_Room_Revenue_Net_LC,''),'0') AS NUMERIC) AS Meetings_Room_Revenue_Net_LC,
+  CAST(IFNULL(NULLIF(Discount_Total_Revenue_LC ,''),'0') AS NUMERIC) AS Discount_Total_Revenue_LC,
+  CAST(IFNULL(NULLIF(Discount_Total_Room_Revenue_LC ,''),'0') AS NUMERIC) AS Discount_Total_Room_Revenue_LC,
+  CAST(IFNULL(NULLIF(Commission_Total_Revenue_LC,''),'0') AS NUMERIC) AS Commission_Total_Revenue_LC,
+  CAST(IFNULL(NULLIF(Commission_Total_Room_Revenue_LC ,''),'0') AS NUMERIC) AS Commission_Total_Room_Revenue_LC,
+  CAST(IFNULL(NULLIF(Breakfast_Services,''),'0') AS NUMERIC) AS Breakfast_Services,
+  CAST(IFNULL(NULLIF(PAX_BF ,''),'0') AS NUMERIC) AS PAX_BF,
+  NULLIF ( TestB , '' ) AS TestB
+  
+FROM
+`nh-spit-resevations.Commercial_Mirror.CM_EmergencyPlan_External` 
+WHERE 
+(
+CAST(IFNULL(NULLIF(Room_Nights ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Room_Nights_CXL ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Room_Nights_No_Show ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Total_Revenue_Fin_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Total_Room_Revenue_Fin_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Total_FB_Revenue_Fin_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Total_Other_Revenue_Fin_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Meetings_Room_Revenue_Fin_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Room_Revenue_Fin_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Breakfast_Revenue_Fin_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Other_FB_Revenue_Fin_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( CXL_Revenue_Fin_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( No_Show_Revenue_Fin_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Room_Potential_CXL_Value_Fin_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Room_Potential_No_Show_Value_Fin_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Total_Revenue_Gross_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Total_Room_Revenue_Gross_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Total_FB_Revenue_Gross_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Total_Other_Revenue_Gross_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Meetings_Room_Revenue_Gross_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Total_Revenue_Net_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Total_Room_Revenue_Net_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Total_FB_Revenue_Net_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Total_Other_Revenue_Net_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Meetings_Room_Revenue_Net_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Discount_Total_Revenue_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Discount_Total_Room_Revenue_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Commission_Total_Revenue_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Commission_Total_Room_Revenue_LC ,''),'0') AS NUMERIC)<>0
+OR
+CAST(IFNULL(NULLIF( Breakfast_Services ,''),'0') AS NUMERIC)<>0)

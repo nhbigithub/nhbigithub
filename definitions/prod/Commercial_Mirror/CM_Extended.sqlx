@@ -1,0 +1,978 @@
+config {
+  tags: ["CM_Emergency", "Commercial_Mirror"],
+  dependencies: ["CM_Raw_Emergency"]
+}
+CREATE OR REPLACE TABLE `nh-spit-resevations.Commercial_Mirror.CM_Core_Extended` AS
+SELECT
+
+-- <<HOTEL CATEGORY>>
+--000
+CM.Hotel_ID,
+MDHotel.Hotel_Name AS Hotel_Name,
+MDHotel.Hotel_Comparable AS Hotel_Comparable,
+MDHotel.Hotel_Comparable_Reason AS Hotel_Comparable_Reason,
+MDHotel.Hotel_Consolidated AS Hotel_Consolidated,
+MDHotel.Hotel_BU AS Hotel_BU,
+MDHotel.Hotel_Sub_BU AS Hotel_Sub_BU,
+--010
+MDHotel.Hotel_Country_ID AS Hotel_Country_ID,
+MDHotel.Hotel_Country AS Hotel_Country,
+MDHotel.Hotel_City AS Hotel_City,
+MDHotel.Hotel_Status AS Hotel_Status,
+MDHotel.Hotel_Brand AS Hotel_Brand,
+MDHotel.Hotel_Portfolio AS Hotel_Portfolio,
+--020
+MDHotel.Hotel_Status AS Hotel_Daily_Status, -- Dummy // Pendiente subir MD Hotel Daily Status
+-- <<RESERVATION DATES CATEGORY>>
+CM.Production_Date,
+MDDatesProduction.Year AS Production_Year,
+MDDatesProduction.Year_Month AS Production_Year_Month,
+--030
+--040
+CM.Creation_Date AS Creation_Date,
+MDDatesCreation.Year AS Creation_Year,
+--050
+MDDatesCreation.Year_Month AS Creation_Year_Month,
+--060
+CM.Check_In_Date as Checkin_Date,
+MDDatesCheckin.Year AS Check_In_Year,
+--070
+MDDatesCheckin.Year_Month AS Check_In_Year_Month,
+--080
+CM.Check_Out_Date AS Checkout_Date,
+MDDatesCheckout.Year AS Check_Out_Year,
+--090
+MDDatesCheckout.Year_Month AS Check_Out_Year_Month,
+--100
+CASE WHEN CM.CXL_Date_Origin is null and CM.Reservation_Status_ID='06' THEN CM.Reservation_Modification_Date
+ELSE CM.CXL_Date_Origin END AS CXL_Date,
+--110
+MDDatesCXL.Year AS CXL_Year,
+MDDatesCXL.Year_Month AS CXL_Year_Month,
+CASE WHEN CM.Production_Date<=current_date()-1 THEN 'Actual'
+     ELSE 'OTB' END AS Actuals_OTB,
+--120
+--130
+CM.Reservation_Modification_Date,
+-- <<BF DATES CATEGORY>>
+CM.BF_Start_Date,
+--140
+CM.BF_End_Date,
+--150
+CM.BF_Creation_Date,
+--160
+CM.BF_Cancellation_Date,
+--170
+--180
+CM.BF_Confirmation_Date,
+--190
+CM.BF_Last_Change_Date,
+-- <<RESERVATION CATEGORY: SEGMENT>>
+MDSegment.Segment_Adjusted_ID AS Segment,
+MDSegment.Segment_Name AS Segment_Name,
+IF(CASE WHEN CM.Market_Segment_ID='TRNC' AND LEFT(CM.Rate_Code_ID,3)='NHR' THEN 'Rewards Transient Bar'
+     WHEN CM.Market_Segment_ID='TNCD' AND LEFT(CM.Rate_Code_ID,3)='NHR' THEN 'Rewards Transient Restricted'
+     WHEN LEFT(CM.Rate_Code_ID,7)='COR_NEG' THEN 'Fixed Corporate Rate'
+     WHEN LEFT(CM.Rate_Code_ID,3)='OCR' THEN 'Open Corporate Rate'
+     WHEN LEFT(CM.Rate_Code_ID,7) IN ('COR_BAR','COR_BOD','COR_DYN') THEN 'Dynamic Corporate Rate'
+     WHEN CM.Market_Segment_ID='' AND CM.Market_Subsegment_ID='' THEN  ReservationType.Subsegment
+     WHEN Subsegment.Reservation_Subsegment_ID IS NULL THEN SegmentSubsegment.Subsegment
+     ELSE Subsegment.Subsegment END IS NULL, 'Other', 
+     CASE WHEN CM.Market_Segment_ID='TRNC' AND LEFT(CM.Rate_Code_ID,3)='NHR' THEN 'Rewards Transient Bar'
+     WHEN CM.Market_Segment_ID='TNCD' AND LEFT(CM.Rate_Code_ID,3)='NHR' THEN 'Rewards Transient Restricted'
+     WHEN LEFT(CM.Rate_Code_ID,7)='COR_NEG' THEN 'Fixed Corporate Rate'
+     WHEN LEFT(CM.Rate_Code_ID,3)='OCR' THEN 'Open Corporate Rate'
+     WHEN LEFT(CM.Rate_Code_ID,7) IN ('COR_BAR','COR_BOD','COR_DYN') THEN 'Dynamic Corporate Rate'
+     WHEN CM.Market_Segment_ID='' AND CM.Market_Subsegment_ID='' THEN  ReservationType.Subsegment
+     WHEN Subsegment.Reservation_Subsegment_ID IS NULL THEN SegmentSubsegment.Subsegment
+     ELSE Subsegment.Subsegment END) AS Subsegment,
+IF(
+    IF(CASE WHEN CM.Market_Segment_ID='TRNC' AND LEFT(CM.Rate_Code_ID,3)='NHR' THEN 'Rewards Transient Bar'
+     WHEN CM.Market_Segment_ID='TNCD' AND LEFT(CM.Rate_Code_ID,3)='NHR' THEN 'Rewards Transient Restricted'
+     WHEN LEFT(CM.Rate_Code_ID,7)='COR_NEG' THEN 'Fixed Corporate Rate'
+     WHEN LEFT(CM.Rate_Code_ID,3)='OCR' THEN 'Open Corporate Rate'
+     WHEN LEFT(CM.Rate_Code_ID,7) IN ('COR_BAR','COR_BOD','COR_DYN') THEN 'Dynamic Corporate Rate'
+     WHEN CM.Market_Segment_ID='' AND CM.Market_Subsegment_ID='' THEN  ReservationType.Subsegment
+     WHEN Subsegment.Reservation_Subsegment_ID IS NULL THEN SegmentSubsegment.Subsegment
+     ELSE Subsegment.Subsegment END IS NULL, 'Other', 
+     CASE WHEN CM.Market_Segment_ID='TRNC' AND LEFT(CM.Rate_Code_ID,3)='NHR' THEN 'Rewards Transient Bar'
+     WHEN CM.Market_Segment_ID='TNCD' AND LEFT(CM.Rate_Code_ID,3)='NHR' THEN 'Rewards Transient Restricted'
+     WHEN LEFT(CM.Rate_Code_ID,7)='COR_NEG' THEN 'Fixed Corporate Rate'
+     WHEN LEFT(CM.Rate_Code_ID,3)='OCR' THEN 'Open Corporate Rate'
+     WHEN LEFT(CM.Rate_Code_ID,7) IN ('COR_BAR','COR_BOD','COR_DYN') THEN 'Dynamic Corporate Rate'
+     WHEN CM.Market_Segment_ID='' AND CM.Market_Subsegment_ID='' THEN  ReservationType.Subsegment
+     WHEN Subsegment.Reservation_Subsegment_ID IS NULL THEN SegmentSubsegment.Subsegment
+     ELSE Subsegment.Subsegment END)='Open Corporate Rate',CM.Rate_Code_ID,
+        IF(CASE WHEN CM.Market_Segment_ID='TRNC' AND LEFT(CM.Rate_Code_ID,3)='NHR' THEN 'Rewards Transient Bar'
+        WHEN CM.Market_Segment_ID='TNCD' AND LEFT(CM.Rate_Code_ID,3)='NHR' THEN 'Rewards Transient Restricted'
+        WHEN LEFT(CM.Rate_Code_ID,7)='COR_NEG' THEN 'Fixed Corporate Rate'
+        WHEN LEFT(CM.Rate_Code_ID,3)='OCR' THEN 'Open Corporate Rate'
+        WHEN LEFT(CM.Rate_Code_ID,7) IN ('COR_BAR','COR_BOD','COR_DYN') THEN 'Dynamic Corporate Rate'
+        WHEN CM.Market_Segment_ID='' AND CM.Market_Subsegment_ID='' THEN  ReservationType.Subsegment
+        WHEN Subsegment.Reservation_Subsegment_ID IS NULL THEN SegmentSubsegment.Subsegment
+        ELSE Subsegment.Subsegment END IS NULL, 'Other', 
+        CASE WHEN CM.Market_Segment_ID='TRNC' AND LEFT(CM.Rate_Code_ID,3)='NHR' THEN 'Rewards Transient Bar'
+        WHEN CM.Market_Segment_ID='TNCD' AND LEFT(CM.Rate_Code_ID,3)='NHR' THEN 'Rewards Transient Restricted'
+        WHEN LEFT(CM.Rate_Code_ID,7)='COR_NEG' THEN 'Fixed Corporate Rate'
+        WHEN LEFT(CM.Rate_Code_ID,3)='OCR' THEN 'Open Corporate Rate'
+        WHEN LEFT(CM.Rate_Code_ID,7) IN ('COR_BAR','COR_BOD','COR_DYN') THEN 'Dynamic Corporate Rate'
+        WHEN CM.Market_Segment_ID='' AND CM.Market_Subsegment_ID='' THEN  ReservationType.Subsegment
+        WHEN Subsegment.Reservation_Subsegment_ID IS NULL THEN SegmentSubsegment.Subsegment
+        ELSE Subsegment.Subsegment END)) AS Subsegment_Cor_Detail,
+--200
+MDCommercialLogic.Commercial_Subsegment AS Subsegment_Trn_Detail, -- Dummy // Pendiente subir nueva versión MD Rate Promo
+MDSegment.Segment_Type AS Segment_Type,
+MDSegment.Segment_Subtype AS Segment_Group,
+MDSegment.Segment_Group AS Segment_Subtype,
+CM.Rate_Code_ID,
+CM.RO_Guarantee_Category AS Guarantee_ID,
+-- <<RESERVATION CATEGORY: CHANNEL>>
+--210
+CASE WHEN MDCommercialLogic.Commercial_Channel = "CRO Web" OR MDCommercialLogic.Commercial_Channel = "CRO Web B2B" OR MDCommercialLogic.Commercial_Channel = "Web" OR MDCommercialLogic.Commercial_Channel = "B2B Digital" THEN "Web"
+ELSE MDCommercialLogic.Commercial_Channel END AS Channel_Group,
+CASE WHEN MDCommercialLogic.Commercial_Channel IS NULL THEN 'Hotel & Others'
+     ELSE MDCommercialLogic.Commercial_Channel END AS Channel,
+CASE WHEN MDCommercialLogic.Commercial_Subchannel IS NULL THEN 'Other'
+     ELSE MDCommercialLogic.Commercial_Subchannel END AS Subchannel,
+CASE
+WHEN MDAgency.Agency_Industry_ID = "C012" THEN "IND-OTA"
+WHEN MDAgency.Agency_Industry_ID = "C025" OR MDAgency.Agency_Industry_ID = "C056" THEN "IND-TO"
+WHEN MDAgency.Agency_Global_ID = "1000211361" THEN "IND-OTA"
+WHEN MDAgency.Agency_Global_ID = "1016882287" THEN "IND-OTA"
+WHEN MDAgency.Agency_Industry_ID <> "" OR MDAgency.Agency_Industry_ID IS NOT NULL THEN "IND-TA"
+WHEN MDCommercialLogic.Commercial_Channel = "Hotel & Others" OR MDCommercialLogic.Commercial_Channel = "GEM" THEN "DIR-Hotel"
+WHEN MDCommercialLogic.Commercial_Channel = "Web" OR MDCommercialLogic.Commercial_Channel = "B2B Digital" OR MDCommercialLogic.Commercial_Channel = "CRO Web" OR MDCommercialLogic.Commercial_Channel = "CRO Web B2B" THEN "DIR-Web"
+WHEN MDCommercialLogic.Commercial_Channel = "CRO" THEN "DIR-CRO"
+WHEN MDCommercialLogic.Commercial_Channel = "GDS" THEN "IND-TA"
+WHEN MDCommercialLogic.Commercial_Channel = "Interface" THEN "IND-OTA"
+ELSE "DIR-Hotel"
+END AS Channel_Mix,
+CASE
+WHEN MDAgency.Agency_Global_ID = "1000211361" THEN "IND-Booking"
+WHEN MDAgency.Agency_Global_ID = "1016882287" THEN "IND-Expedia"
+WHEN MDAgency.Agency_Industry_ID = "C012" THEN "IND-OTA"
+WHEN MDAgency.Agency_Industry_ID = "C025" OR MDAgency.Agency_Industry_ID = "C056" THEN "IND-TO"
+WHEN MDAgency.Agency_Industry_ID <> "" AND MDCommercialLogic.Commercial_Channel = "Web" THEN "IND-TA Web"
+WHEN MDAgency.Agency_Industry_ID <> "" OR MDAgency.Agency_Industry_ID IS NOT NULL THEN "IND-TA"
+WHEN MDCommercialLogic.Commercial_Channel = "Hotel & Others" THEN "DIR-Hotel"
+WHEN MDCommercialLogic.Commercial_Channel = "GEM" THEN "DIR-GEM"
+WHEN MDCommercialLogic.Commercial_Channel = "CRO Web B2B" THEN "DIR-CRO Web B2B"
+WHEN MDCommercialLogic.Commercial_Channel = "CRO Web" THEN "DIR-CRO Web B2C"
+WHEN MDCommercialLogic.Commercial_Channel = "GEM" THEN "DIR-GEM"
+WHEN MDCommercialLogic.Commercial_Channel = "B2B Digital" THEN "DIR-Web B2B"
+WHEN MDCommercialLogic.Commercial_Channel = "Web" THEN "DIR-Web B2C"
+WHEN MDCommercialLogic.Commercial_Channel = "CRO" AND CM.RO_Subchannel_ID = "04VOICE" THEN "DIR-CRO Voice"
+WHEN MDCommercialLogic.Commercial_Channel = "CRO" AND CM.RO_Subchannel_ID = "01EMAIL" THEN "DIR-CRO Mail"
+WHEN MDCommercialLogic.Commercial_Channel = "CRO" AND CM.RO_Subchannel_ID = "4. VOICE" THEN "DIR-CRO Voice"
+WHEN MDCommercialLogic.Commercial_Channel = "CRO" AND CM.RO_Subchannel_ID = "1. EMAIL" THEN "DIR-CRO Mail"
+WHEN MDCommercialLogic.Commercial_Channel = "CRO" THEN "DIR-CRO Rest"
+WHEN MDCommercialLogic.Commercial_Channel = "Interface" THEN "IND-OTA"
+WHEN MDCommercialLogic.Commercial_Channel = "GDS" THEN "IND-TA"
+ELSE "DIR-Hotel"
+END AS Subchannel_Mix,
+CM.RO_Channel_ID AS Channel_Reservation,
+CM.RO_Subchannel_ID AS Subchannel_Reservation,
+-- <<RESERVATION CATEGORY: LOCALIZER>>
+--220
+CM.Reservation_ID,
+CM.Reservation_Group_ID,
+CM.Booking_File_ID,
+-- <<RESERVATION CATEGORY: RESERVATION/BF>>
+CASE WHEN BF.TREV_BF BETWEEN 1 AND 2500 THEN "XXS"
+     WHEN BF.TREV_BF BETWEEN 2500 AND 5000 THEN "XS"
+     WHEN BF.TREV_BF BETWEEN 5000 AND 10000 THEN "S"
+     WHEN BF.TREV_BF BETWEEN 10000 AND 30000 THEN "M"
+     WHEN BF.TREV_BF BETWEEN 30000 AND 80000 THEN "L"
+     WHEN BF.TREV_BF BETWEEN 80000 AND 200000 THEN "XL"
+     WHEN BF.TREV_BF > 200000 THEN "XXL"
+     ELSE "0" 
+     END AS BF_Size,
+CM.Reservation_Type_ID,
+CM.Reservation_Status_ID,
+MDStatusReservation.Status_Reservation_Name AS Reservation_Status_Name,
+--230
+CM.Previous_Reservation_Status_ID,
+CM.BF_Status_ID,
+--240
+CM.RoomType_Contracted,
+CM.RoomType_Upgrade,
+CM.RoomType_Produced,
+RoomContracted.Room_Category as RoomType_Category_Contracted,
+RoomContracted.Room_Category_Tier as Room_Category_Contracted_Tier,
+RoomContracted.Room_Category_Tier_Group as Room_Category_Contracted_Tier_Group,
+RoomUpgrade.Room_Category as RoomType_Category_Upgrade,
+RoomUpgrade.Room_Category_Tier as Room_Category_Upgrade_Tier, 
+RoomUpgrade.Room_Category_Tier_Group as Room_Category_Upgrade_Tier_Group,
+RoomProduced.Room_Category as RoomType_Category_Produced,
+RoomProduced.Room_Category_Tier as Room_Category_Produced_Tier,
+RoomProduced.Room_Category_Tier_Group as Room_Category_Produced_Tier_Group,
+IF(right(RoomContracted.Room_Tier_Detail,1) ='9' OR right(RoomUpgrade.Room_Tier_Detail,1) ='9' OR right(RoomProduced.Room_Tier_Detail,1) ='9',
+CASE WHEN RoomProduced.Room_Category_Tier = RoomContracted.Room_Category_Tier THEN "Book&Stay"
+     WHEN RoomProduced.Room_Category_Tier < RoomContracted.Room_Category_Tier AND Total_Room_Revenue_Fin_LC=Room_Revenue_Fin_LC THEN "Downgrade"
+     WHEN RoomProduced.Room_Category_Tier < RoomContracted.Room_Category_Tier AND Total_Room_Revenue_Fin_LC>Room_Revenue_Fin_LC THEN "Downgrade with Upselling"
+     WHEN RoomProduced.Room_Category_Tier < RoomContracted.Room_Category_Tier AND Total_Room_Revenue_Fin_LC<Room_Revenue_Fin_LC THEN "Downgrade with Adjustment"
+     WHEN RoomProduced.Room_Category_Tier > RoomContracted.Room_Category_Tier AND RoomProduced.Room_Category_Tier > RoomUpgrade.Room_Category_Tier AND Total_Room_Revenue_Fin_LC=Room_Revenue_Fin_LC THEN "Free Double Upgrade"
+     WHEN RoomProduced.Room_Category_Tier > RoomContracted.Room_Category_Tier AND RoomProduced.Room_Category_Tier > RoomUpgrade.Room_Category_Tier AND Total_Room_Revenue_Fin_LC>Room_Revenue_Fin_LC THEN "Upgrade+Upselling"
+     WHEN RoomProduced.Room_Category_Tier > RoomContracted.Room_Category_Tier AND RoomProduced.Room_Category_Tier > RoomUpgrade.Room_Category_Tier AND Total_Room_Revenue_Fin_LC<Room_Revenue_Fin_LC THEN "Double Upgrade with Adjustment"
+     WHEN RoomProduced.Room_Category_Tier > RoomContracted.Room_Category_Tier AND Total_Room_Revenue_Fin_LC=Room_Revenue_Fin_LC THEN "Free Upgrade"
+     WHEN RoomProduced.Room_Category_Tier > RoomContracted.Room_Category_Tier AND Total_Room_Revenue_Fin_LC>Room_Revenue_Fin_LC THEN "Upselling"
+     WHEN RoomProduced.Room_Category_Tier > RoomContracted.Room_Category_Tier AND Total_Room_Revenue_Fin_LC<Room_Revenue_Fin_LC THEN "Upselling with Adjustment"
+     ELSE "Check" END,
+     CASE WHEN RoomProduced.Room_Tier_Detail = RoomContracted.Room_Tier_Detail THEN "Book&Stay"
+     WHEN RoomProduced.Room_Tier_Detail < RoomContracted.Room_Tier_Detail AND Total_Room_Revenue_Fin_LC=Room_Revenue_Fin_LC THEN "Downgrade"
+     WHEN RoomProduced.Room_Tier_Detail < RoomContracted.Room_Tier_Detail AND Total_Room_Revenue_Fin_LC>Room_Revenue_Fin_LC THEN "Downgrade with Upselling"
+     WHEN RoomProduced.Room_Tier_Detail < RoomContracted.Room_Tier_Detail AND Total_Room_Revenue_Fin_LC<Room_Revenue_Fin_LC THEN "Downgrade with Adjustment"
+     WHEN RoomProduced.Room_Tier_Detail > RoomContracted.Room_Tier_Detail AND RoomProduced.Room_Tier_Detail > RoomUpgrade.Room_Tier_Detail AND Total_Room_Revenue_Fin_LC=Room_Revenue_Fin_LC THEN "Free Double Upgrade"
+     WHEN RoomProduced.Room_Tier_Detail > RoomContracted.Room_Tier_Detail AND RoomProduced.Room_Tier_Detail > RoomUpgrade.Room_Tier_Detail AND Total_Room_Revenue_Fin_LC>Room_Revenue_Fin_LC THEN "Upgrade+Upselling"
+     WHEN RoomProduced.Room_Tier_Detail > RoomContracted.Room_Tier_Detail AND RoomProduced.Room_Tier_Detail > RoomUpgrade.Room_Tier_Detail AND Total_Room_Revenue_Fin_LC<Room_Revenue_Fin_LC THEN "Double Upgrade with Adjustment"
+     WHEN RoomProduced.Room_Tier_Detail > RoomContracted.Room_Tier_Detail AND Total_Room_Revenue_Fin_LC=Room_Revenue_Fin_LC THEN "Free Upgrade"
+     WHEN RoomProduced.Room_Tier_Detail > RoomContracted.Room_Tier_Detail AND Total_Room_Revenue_Fin_LC>Room_Revenue_Fin_LC THEN "Upselling"
+     WHEN RoomProduced.Room_Tier_Detail > RoomContracted.Room_Tier_Detail AND Total_Room_Revenue_Fin_LC<Room_Revenue_Fin_LC THEN "Upselling with Adjustment"
+     ELSE "Check" END) AS Stay_Category,
+CASE WHEN RoomProduced.Room_Tier_Detail > RoomContracted.Room_Tier_Detail THEN 'YES'
+     ELSE 'NO' END as RoomType_Upgrade_flag,
+CASE WHEN Hotel_Brand='ANANTARA' and RoomProduced.Room_Category_Tier_Group=2 THEN 'Entry Level'
+    WHEN Hotel_Brand='ANANTARA' and RoomProduced.Room_Category_Tier_Group=3 THEN 'Entry Level+1'
+    WHEN Hotel_Brand='ANANTARA' and RoomProduced.Room_Category_Tier_Group=4 THEN 'Entry Level+2'
+    WHEN Hotel_Brand='ANANTARA' and RoomProduced.Room_Category_Tier_Group=5 THEN 'Entry Level+3'
+    WHEN Hotel_Brand='ANANTARA' and RoomProduced.Room_Category_Tier_Group=6 THEN 'Entry Level+4'
+    WHEN (Hotel_Brand='NH HOTELS' OR Hotel_Brand='AVANI' OR Hotel_Brand='TIVOLI' OR Hotel_Brand='OTHER BRANDS') AND RoomProduced.Room_Category_Tier_Group=1 THEN 'Entry Level'
+    WHEN (Hotel_Brand='NH HOTELS' OR Hotel_Brand='AVANI' OR Hotel_Brand='TIVOLI' OR Hotel_Brand='OTHER BRANDS') AND RoomProduced.Room_Category_Tier_Group=2 THEN 'Entry Level+1'
+    WHEN (Hotel_Brand='NH HOTELS' OR Hotel_Brand='AVANI' OR Hotel_Brand='TIVOLI' OR Hotel_Brand='OTHER BRANDS') AND RoomProduced.Room_Category_Tier_Group=3 THEN 'Entry Level+2'
+    WHEN (Hotel_Brand='NH HOTELS' OR Hotel_Brand='AVANI' OR Hotel_Brand='TIVOLI' OR Hotel_Brand='OTHER BRANDS') AND RoomProduced.Room_Category_Tier_Group=4 THEN 'Entry Level+3'
+    WHEN (Hotel_Brand='NH HOTELS' OR Hotel_Brand='AVANI' OR Hotel_Brand='TIVOLI' OR Hotel_Brand='OTHER BRANDS') AND RoomProduced.Room_Category_Tier_Group=5 THEN 'Entry Level+4'
+    WHEN (Hotel_Brand='NH HOTELS' OR Hotel_Brand='AVANI' OR Hotel_Brand='TIVOLI' OR Hotel_Brand='OTHER BRANDS') AND RoomProduced.Room_Category_Tier_Group=6 THEN 'Entry Level+5'
+    WHEN (Hotel_Brand='NH COLLECTION' OR Hotel_Brand='NHOW') AND RoomProduced.Room_Category_Tier_Group IN(1,2) THEN 'Entry Level'
+    WHEN (Hotel_Brand='NH COLLECTION' OR Hotel_Brand='NHOW') AND RoomProduced.Room_Category_Tier_Group=3 THEN 'Entry Level+1'
+    WHEN (Hotel_Brand='NH COLLECTION' OR Hotel_Brand='NHOW') AND RoomProduced.Room_Category_Tier_Group=4 THEN 'Entry Level+2'
+    WHEN (Hotel_Brand='NH COLLECTION' OR Hotel_Brand='NHOW') AND RoomProduced.Room_Category_Tier_Group=5 THEN 'Entry Level+3'
+    WHEN (Hotel_Brand='NH COLLECTION' OR Hotel_Brand='NHOW') AND RoomProduced.Room_Category_Tier_Group=6 THEN 'Entry Level+4'
+ELSE 'Check' END as Entry_Level_Produced,
+--240
+CASE WHEN Daily.RO_Contract IS NULL THEN Extra.Contract_identifier
+  ELSE Daily.RO_Contract END AS RO_Contract, --  Viene del Daily, Workarround para W&W
+CASE WHEN CM.MealPlan_Upgrade_ID IS NULL THEN CM.MealPlan_Contracted_ID
+ELSE CM.MealPlan_Upgrade_ID END AS MealPlan_Produced_ID,
+CM.MealPlan_Contracted_ID,
+--250
+CM.MealPlan_Upgrade_ID,
+-- <<CLIENT CATEGORY: AGENCY>>
+CM.Agency_ID,
+MDAgency.Agency_Name,
+MDAgency.Agency_Global_ID,
+MDAgency.Agency_Global_Name,
+CASE WHEN CM.GQ_Branch_Agency_ID IS NULL or CM.GQ_Branch_Agency_ID='' THEN BranchAgency2.Agency_Branch_ID
+     WHEN CM.GQ_Branch_Agency_ID='WITHOUT_A' THEN 'WITHOUT_A'
+     WHEN CM.GQ_Branch_Agency_ID IS NOT NULL and BranchAgency.Agency_Branch_ID IS NULL THEN CM.GQ_Branch_Agency_ID 
+	 ELSE BranchAgency.Agency_Branch_ID END as Agency_Branch_ID,
+CASE WHEN CM.GQ_Branch_Agency_ID IS NULL or CM.GQ_Branch_Agency_ID='' THEN BranchAgency2.BID_Agency_Name
+     WHEN CM.GQ_Branch_Agency_ID='WITHOUT_A' THEN 'WITHOUT_A'
+     WHEN CM.GQ_Branch_Agency_ID IS NOT NULL and BranchAgency.Agency_Branch_ID IS NULL THEN MDAgency.Agency_Name 
+	 ELSE BranchAgency.Agency_Branch_Name END as Agency_Branch_Name,
+MDAgency.Agency_Global_Country_ID,
+--260
+MDAgency.Agency_Global_Industry,
+MDAgency.Agency_Country_ID,
+MDAgency.Agency_AH_Name,
+CASE WHEN CM.Agency_ID= 'WITHOUT_A' THEN 'No Agency'
+WHEN MDAgency.Agency_Industry_ID = "" OR MDAgency.Agency_Industry_ID IS NULL THEN "Travel Agency"
+WHEN MDAgency.Agency_Industry_ID = "C012" THEN "OTA"
+WHEN MDAgency.Agency_Industry_ID = "C025" OR MDAgency.Agency_Industry_ID = "C056" THEN "TO"
+ELSE "Travel Agency" END AS Agency_Type,
+MDAgency.Agency_AH_Name AS Agency_Managed, --  Dummy // Pendiente lógica
+CASE WHEN CM.Agency_ID= 'WITHOUT_A' THEN 'No Agency'
+     WHEN TopAgency.Agency IS NULL AND MDAgency.Agency_Industry_ID = "C012" THEN 'Rest_OTA' 
+     WHEN TopAgency.Agency IS NULL AND (MDAgency.Agency_Industry_ID = "C025" OR MDAgency.Agency_Industry_ID = "C056") THEN 'REST_TO'
+     WHEN TopAgency.Agency IS NOT NULL THEN TopAgency.Agency_Name 
+     ELSE 'Rest_TA' END AS TOP_Agency,
+-- <<CLIENT CATEGORY: COMPANY>>
+--270
+CM.Company_ID,
+MDCompany.Company_Name,
+MDCompany.Company_Global_ID,
+MDCompany.Company_Global_Name,
+--280
+CASE WHEN CM.GQ_Branch_Company_ID IS NULL or CM.GQ_Branch_Company_ID='' THEN BranchComp2.Company_Branch_ID
+     WHEN CM.GQ_Branch_Company_ID='WITHOUT_C' THEN 'WITHOUT_C'
+     WHEN CM.GQ_Branch_Company_ID IS NOT NULL and BranchComp.Company_Branch_ID IS NULL then CM.GQ_Branch_Company_ID 
+	 ELSE BranchComp.Company_Branch_ID END AS Company_Branch_ID,
+CASE WHEN CM.GQ_Branch_Company_ID IS NULL or CM.GQ_Branch_Company_ID='' THEN BranchComp2.BID_Company_Name
+     WHEN CM.GQ_Branch_Company_ID='WITHOUT_C' THEN 'WITHOUT_C'
+     WHEN CM.GQ_Branch_Company_ID IS NOT NULL and BranchComp.Company_Branch_ID IS NULL THEN MDCompany.Company_Name
+	 ELSE BranchComp.Company_Branch_Name END AS Company_Branch_Name,
+MDCompany.Company_Global_Country_ID,
+MDCompany.Company_Global_Industry,
+MDCompany.Company_Country_ID,
+--290
+MDCompany.Company_AH_Name,
+CASE WHEN MDCompany.Company_Industry_ID = "C056" OR MDCompany.Company_Industry_ID = "C004" OR MDCompany.Company_Industry_ID = "C060" THEN "Airlines"
+WHEN MDCompany.Company_Industry_ID = "C017" THEN "Government"
+WHEN CM.Company_ID='WITHOUT_C' THEN 'No Company' -- nueva línea
+ELSE "Company"
+END AS Company_Type,
+CASE WHEN MDCompany.Company_AH_Name="UNMANAGED ACCOUNTS" OR MDCompany.Company_AH_Name="TO BE QUALIFIED ACCOUNT" THEN "Unmanage Business"
+WHEN  MDCompany.Company_Superior_ID="2000001020" OR MDCompany.Company_Superior_ID="2000001024" OR MDCompany.Company_Superior_ID="2000001025" OR MDCompany.Company_Superior_ID="2000001026" THEN "NH+"
+WHEN  CM.Company_ID='WITHOUT_C' THEN 'No Company'
+ELSE "Manage Business" END AS Company_Managed,
+CASE WHEN CM.Company_ID= 'WITHOUT_C' THEN 'No Company'
+     WHEN TopCompany.Company_Global_ID IS NULL THEN 'Rest_Companies' 
+     ELSE TopCompany.Company_Global_Name END AS TOP_Company,
+-- <<CLIENT CATEGORY: INTERMEDIARY>>
+CM.Intermediary_ID,
+CASE WHEN MDIntermediaryAgency.Agency_Name = "" OR MDIntermediaryAgency.Agency_Name IS NULL THEN MDIntermediaryCompany.Company_Name
+ELSE MDIntermediaryAgency.Agency_Name END AS Intermediary_Name,
+--300
+CASE WHEN MDIntermediaryAgency.Agency_Global_ID = "" OR MDIntermediaryAgency.Agency_Global_ID IS NULL  THEN MDIntermediaryCompany.Company_Global_ID
+ELSE MDIntermediaryAgency.Agency_Global_ID END AS Intermediary_Global_ID,
+CASE WHEN MDIntermediaryAgency.Agency_Global_Name = "" OR MDIntermediaryAgency.Agency_Global_Name IS NULL THEN MDIntermediaryCompany.Company_Global_Name
+ELSE MDIntermediaryAgency.Agency_Global_Name END AS Intermediary_Global_Name,
+CASE WHEN MDIntermediaryAgency.Agency_Global_Country_ID = "" OR MDIntermediaryAgency.Agency_Global_Country_ID IS NULL THEN MDIntermediaryCompany.Company_Global_Country_ID
+ELSE MDIntermediaryAgency.Agency_Global_Country_ID END AS Intermediary_Global_Country_ID,
+CASE WHEN MDIntermediaryAgency.Agency_Global_Industry = "" OR MDIntermediaryAgency.Agency_Global_Industry IS NULL THEN MDIntermediaryCompany.Company_Global_Industry
+ELSE MDIntermediaryAgency.Agency_Global_Industry END AS Intermediary_Global_Industry,
+CASE WHEN MDIntermediaryAgency.Agency_Country_ID = "" OR MDIntermediaryAgency.Agency_Country_ID IS NULL THEN MDIntermediaryCompany.Company_Country_ID
+ELSE MDIntermediaryAgency.Agency_Country_ID END AS Intermediary_Country_ID,
+CASE WHEN  CM.Intermediary_ID= 'WITHOUT_I' THEN 'No Intermediary'
+     WHEN TopIntermediary.Intermediary_Global_ID IS NULL THEN 'Rest_Intermediary' 
+     ELSE TopIntermediary.Intermediary_Global_Name END AS TOP_Intermediary,
+-- <<CLIENT CATEGORY: GUEST>>
+--310
+CM.RO_Main_Guest_ID AS Guest_ID,
+CM.RO_Guest_Country_ID AS Guest_Country_ID,
+MDFeederMarketGuest.Country_Name AS Guest_Country_Name,
+-- <<CLIENT CATEGORY: CLIENT REST>>
+CASE WHEN CM.Company_ID IS NULL OR CM.Agency_ID IS NULL OR MDAgency.Agency_Industry_ID = "C012" OR MDSegment.Segment_Group = "B2C" THEN "B2C"
+ELSE "B2B" END AS B2B_Business,
+CASE
+WHEN MDCompany.Company_Country_ID <> "" OR MDCompany.Company_Country_ID IS NOT NULL THEN MDCompany.Company_Country_ID
+WHEN MDAgency.Agency_Feeder_Industry = "Feeder_Agency" AND MDAgency.Agency_Country_ID <>"" THEN MDAgency.Agency_Country_ID
+WHEN MDAgency.Agency_Feeder_Industry = "Feeder_Agency" AND MDAgency.Agency_Country_ID IS NOT NULL THEN MDAgency.Agency_Country_ID
+WHEN CM.RO_Guest_Country_ID <> "" THEN CM.RO_Guest_Country_ID
+WHEN CM.RO_Guest_Country_ID IS NOT NULL THEN CM.RO_Guest_Country_ID
+ELSE MDHotel.Hotel_Country_ID
+END AS Feeder_Market_ID,
+CASE WHEN CASE
+          WHEN MDCompany.Company_Country_ID <> "" OR MDCompany.Company_Country_ID IS NOT NULL THEN MDCompany.Company_Country_ID
+          WHEN MDAgency.Agency_Feeder_Industry = "Feeder_Agency" AND MDAgency.Agency_Country_ID <>"" THEN MDAgency.Agency_Country_ID
+          WHEN MDAgency.Agency_Feeder_Industry = "Feeder_Agency" AND MDAgency.Agency_Country_ID IS NOT NULL THEN MDAgency.Agency_Country_ID
+          WHEN CM.RO_Guest_Country_ID <> "" THEN CM.RO_Guest_Country_ID
+          WHEN CM.RO_Guest_Country_ID IS NOT NULL THEN CM.RO_Guest_Country_ID
+          ELSE MDHotel.Hotel_Country_ID END = MDHotel.Hotel_Country_ID THEN 'Inbound'
+     ELSE 'Outbound' END AS Inbound_Outbound,
+RO_Commercial_Client_ID AS Commercial_Client_ID,
+-- <<PRODUCTION KPI: KPI LC>>
+--320
+CM.Total_Revenue_Fin_LC,
+CM.Total_Room_Revenue_Fin_LC,
+CM.Total_FB_Revenue_Fin_LC,
+CM.Total_Other_Revenue_Fin_LC,
+CM.Meetings_Room_Revenue_Fin_LC,
+--330
+CM.Total_Revenue_Fin_LC - CM.Total_Room_Revenue_Fin_LC AS Total_Total_Other_Revenue_Fin_LC,
+CM.Room_Revenue_Fin_LC,
+CM.Breakfast_Revenue_Fin_LC,
+CM.Other_FB_Revenue_Fin_LC,
+CM.CXL_Revenue_Fin_LC,
+CM.No_Show_Revenue_Fin_LC,
+CM.Room_Potential_CXL_Value_Fin_LC,
+CM.Room_Potential_No_Show_Value_Fin_LC,
+CM.Total_Revenue_Gross_LC,
+CM.Total_Room_Revenue_Gross_LC,
+--340
+CM.Total_FB_Revenue_Gross_LC,
+CM.Total_Other_Revenue_Gross_LC,
+CM.Meetings_Room_Revenue_Gross_LC,
+CM.Total_Revenue_Net_LC,
+CM.Total_Room_Revenue_Net_LC,
+CM.Total_FB_Revenue_Net_LC,
+CM.Total_Other_Revenue_Net_LC,
+CM.Meetings_Room_Revenue_Net_LC,
+CM.Discount_Total_Revenue_LC,
+CM.Discount_Total_Room_Revenue_LC,
+--350
+CM.Commission_Total_Revenue_LC,
+CM.Commission_Total_Room_Revenue_LC,
+-- <<PRODUCTION KPI: KPI €>>
+CASE WHEN MDHotel.Hotel_Currency = "EUR" THEN CM.Total_Revenue_FIN_LC
+ELSE SAFE_MULTIPLY(CM.Total_Revenue_FIN_LC, MDXR.XR_Value_Multiply) END AS Total_Revenue_Fin_EUR,
+CASE WHEN MDHotel.Hotel_Currency = "EUR" THEN CM.Total_Room_Revenue_FIN_LC
+ELSE SAFE_MULTIPLY(Total_Room_Revenue_FIN_LC, MDXR.XR_Value_Multiply) END AS Total_Room_Revenue_Fin_EUR,
+CASE WHEN MDHotel.Hotel_Currency = "EUR" THEN CM.Total_FB_Revenue_FIN_LC
+ELSE SAFE_MULTIPLY(CM.Total_FB_Revenue_FIN_LC, MDXR.XR_Value_Multiply) END AS FB_Revenue_Fin_EUR,
+CASE WHEN MDHotel.Hotel_Currency = "EUR" THEN CM.Total_Other_Revenue_FIN_LC
+ELSE SAFE_MULTIPLY(CM.Total_Other_Revenue_FIN_LC, MDXR.XR_Value_Multiply) END AS Other_Revenue_Fin_EUR,
+CASE WHEN MDHotel.Hotel_Currency = "EUR" THEN CM.Meetings_Room_Revenue_FIN_LC
+ELSE SAFE_MULTIPLY(CM.Meetings_Room_Revenue_FIN_LC, MDXR.XR_Value_Multiply) END AS Meetings_Room_Revenue_Fin_EUR,
+CASE WHEN MDHotel.Hotel_Currency = "EUR" THEN CM.Total_Revenue_FIN_LC - CM.Total_Room_Revenue_FIN_LC
+ELSE SAFE_MULTIPLY((CM.Total_Revenue_FIN_LC - CM.Total_Room_Revenue_FIN_LC), MDXR.XR_Value_Multiply) END AS Total_Total_Other_Revenue_Fin_EUR,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Room_Revenue_FIN_LC
+ELSE SAFE_MULTIPLY(CM.Room_Revenue_FIN_LC, MDXR.XR_Value_Multiply) END AS Room_Revenue_Fin_EUR,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Breakfast_Revenue_FIN_LC
+ELSE SAFE_MULTIPLY(CM.Breakfast_Revenue_FIN_LC, MDXR.XR_Value_Multiply) END AS Breakfast_Revenue_Fin_EUR,
+--360
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Other_FB_Revenue_FIN_LC
+ELSE SAFE_MULTIPLY(CM.Other_FB_Revenue_FIN_LC, MDXR.XR_Value_Multiply) END AS Other_FB_Revenue_Fin_EUR,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.CXL_Revenue_FIN_LC
+ELSE SAFE_MULTIPLY(CM.CXL_Revenue_FIN_LC, MDXR.XR_Value_Multiply) END AS CXL_Revenue_Fin_EUR,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.No_Show_Revenue_FIN_LC
+ELSE SAFE_MULTIPLY(CM.No_Show_Revenue_FIN_LC, MDXR.XR_Value_Multiply) END AS No_Show_Revenue_Fin_EUR,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Room_Potential_CXL_Value_FIN_LC
+ELSE SAFE_MULTIPLY(CM.Room_Potential_CXL_Value_FIN_LC, MDXR.XR_Value_Multiply) END AS Room_Potential_CXL_Value_Fin_EUR,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Room_Potential_No_Show_Value_FIN_LC
+ELSE SAFE_MULTIPLY(CM.Room_Potential_No_Show_Value_FIN_LC, MDXR.XR_Value_Multiply) END AS Room_Potential_NS_Value_Fin_EUR,
+-- Booked Revenue
+CASE WHEN Booked.Reservation_ID is not null THEN Booked.TREV_Booked/count_reserv.count_rows
+     WHEN Booked.Reservation_ID IS NULL AND CM.Reservation_Status_ID='05' THEN CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Room_Potential_No_Show_Value_FIN_LC
+		ELSE SAFE_MULTIPLY(CM.Room_Potential_No_Show_Value_FIN_LC, MDXR.XR_Value_Multiply) END
+     WHEN Booked.Reservation_ID IS NULL AND CM.Reservation_Status_ID='06' THEN CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Room_Potential_CXL_Value_FIN_LC
+        ELSE SAFE_MULTIPLY(CM.Room_Potential_CXL_Value_FIN_LC, MDXR.XR_Value_Multiply) END
+     ELSE CASE WHEN MDHotel.Hotel_Currency = "EUR" THEN CM.Total_Revenue_FIN_LC
+          ELSE SAFE_MULTIPLY(CM.Total_Revenue_FIN_LC, MDXR.XR_Value_Multiply) END 
+     END AS Booked_Revenue_Fin_Eur,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Total_Revenue_GROSS_LC
+ELSE SAFE_MULTIPLY(CM.Total_Revenue_GROSS_LC, MDXR.XR_Value_Multiply) END AS Total_Revenue_Gross_EUR,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Total_Room_Revenue_GROSS_LC
+ELSE SAFE_MULTIPLY(CM.Total_Room_Revenue_GROSS_LC, MDXR.XR_Value_Multiply) END AS Total_Room_Revenue_Gross_EUR,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Total_FB_Revenue_GROSS_LC
+ELSE SAFE_MULTIPLY(CM.Total_FB_Revenue_GROSS_LC, MDXR.XR_Value_Multiply) END AS FB_Revenue_Gross_EUR,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Total_Other_Revenue_GROSS_LC
+ELSE SAFE_MULTIPLY(CM.Total_Other_Revenue_GROSS_LC, MDXR.XR_Value_Multiply) END AS Other_Revenue_Gross_EUR,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Meetings_Room_Revenue_GROSS_LC
+ELSE SAFE_MULTIPLY(CM.Meetings_Room_Revenue_GROSS_LC, MDXR.XR_Value_Multiply) END AS Meetings_Room_Revenue_Gross_EUR,
+--370
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Total_Revenue_NET_LC
+ELSE SAFE_MULTIPLY(CM.Total_Revenue_NET_LC, MDXR.XR_Value_Multiply) END AS Total_Revenue_Net_EUR,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Total_Room_Revenue_NET_LC
+ELSE SAFE_MULTIPLY(CM.Total_Room_Revenue_NET_LC, MDXR.XR_Value_Multiply) END AS Total_Room_Revenue_Net_EUR,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Total_FB_Revenue_NET_LC
+ELSE SAFE_MULTIPLY(CM.Total_FB_Revenue_NET_LC, MDXR.XR_Value_Multiply) END AS FB_Revenue_Net_EUR,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Total_Other_Revenue_NET_LC
+ELSE SAFE_MULTIPLY(CM.Total_Other_Revenue_NET_LC, MDXR.XR_Value_Multiply) END AS Other_Revenue_Net_EUR,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Meetings_Room_Revenue_NET_LC
+ELSE SAFE_MULTIPLY(CM.Meetings_Room_Revenue_NET_LC, MDXR.XR_Value_Multiply) END AS Meetings_Room_Revenue_Net_EUR,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Discount_Total_Revenue_LC
+ELSE SAFE_MULTIPLY(CM.Discount_Total_Revenue_LC, MDXR.XR_Value_Multiply) END AS Discount_Total_Revenue_EUR,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Discount_Total_Room_Revenue_LC
+ELSE SAFE_MULTIPLY(CM.Discount_Total_Room_Revenue_LC, MDXR.XR_Value_Multiply) END AS Discount_Room_Revenue_EUR,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Commission_Total_Revenue_LC
+ELSE SAFE_MULTIPLY(CM.Commission_Total_Revenue_LC, MDXR.XR_Value_Multiply) END AS Commission_Total_Revenue_EUR,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Commission_Total_Room_Revenue_LC
+ELSE SAFE_MULTIPLY(CM.Commission_Total_Room_Revenue_LC, MDXR.XR_Value_Multiply) END AS Commission_Room_Revenue_EUR,
+-- <<PRODUCTION KPI: KPI € XRLY>>
+--380
+CASE WHEN MDHotel.Hotel_Currency = "EUR" THEN CM.Total_Revenue_FIN_LC
+ELSE SAFE_MULTIPLY(CM.Total_Revenue_FIN_LC, MDXR.XR_Value_Multiply_actual) END AS Total_Revenue_FIN_EUR_XRLY,
+CASE WHEN MDHotel.Hotel_Currency = "EUR" THEN CM.Total_Room_Revenue_FIN_LC
+ELSE SAFE_MULTIPLY(Total_Room_Revenue_FIN_LC, MDXR.XR_Value_Multiply_actual) END AS Total_Room_Revenue_FIN_EUR_XRLY,
+CASE WHEN MDHotel.Hotel_Currency = "EUR" THEN CM.Total_FB_Revenue_FIN_LC
+ELSE SAFE_MULTIPLY(CM.Total_FB_Revenue_FIN_LC, MDXR.XR_Value_Multiply_actual) END AS FB_Revenue_FIN_EUR_XRLY,
+CASE WHEN MDHotel.Hotel_Currency = "EUR" THEN CM.Total_Other_Revenue_FIN_LC
+ELSE SAFE_MULTIPLY(CM.Total_Other_Revenue_FIN_LC, MDXR.XR_Value_Multiply_actual) END AS Other_Revenue_FIN_EUR_XRLY,
+CASE WHEN MDHotel.Hotel_Currency = "EUR" THEN CM.Meetings_Room_Revenue_FIN_LC
+ELSE SAFE_MULTIPLY(CM.Meetings_Room_Revenue_FIN_LC, MDXR.XR_Value_Multiply_actual) END AS Meetings_Room_Revenue_FIN_EUR_XRLY,
+CASE WHEN MDHotel.Hotel_Currency = "EUR" THEN CM.Total_Revenue_FIN_LC - CM.Total_Room_Revenue_FIN_LC
+ELSE SAFE_MULTIPLY((CM.Total_Revenue_FIN_LC - CM.Total_Room_Revenue_FIN_LC), MDXR.XR_Value_Multiply_actual) END AS Total_Total_Other_Revenue_FIN_EUR_XRLY,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Room_Revenue_FIN_LC
+ELSE SAFE_MULTIPLY(CM.Room_Revenue_FIN_LC, MDXR.XR_Value_Multiply_actual) END AS Room_Revenue_FIN_EUR_XRLY,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Breakfast_Revenue_FIN_LC
+ELSE SAFE_MULTIPLY(CM.Breakfast_Revenue_FIN_LC, MDXR.XR_Value_Multiply_actual) END AS Breakfast_Revenue_FIN_EUR_XRLY,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Other_FB_Revenue_FIN_LC
+ELSE SAFE_MULTIPLY(CM.Other_FB_Revenue_FIN_LC, MDXR.XR_Value_Multiply_actual) END AS Other_FB_Revenue_FIN_EUR_XRLY,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.CXL_Revenue_FIN_LC
+ELSE SAFE_MULTIPLY(CM.CXL_Revenue_FIN_LC, MDXR.XR_Value_Multiply_actual) END AS CXL_Revenue_FIN_EUR_XRLY,
+--390
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.No_Show_Revenue_FIN_LC
+ELSE SAFE_MULTIPLY(CM.No_Show_Revenue_FIN_LC, MDXR.XR_Value_Multiply_actual) END AS NoShow_Revenue_FIN_EUR_XRLY,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Room_Potential_CXL_Value_FIN_LC
+ELSE SAFE_MULTIPLY(CM.Room_Potential_CXL_Value_FIN_LC, MDXR.XR_Value_Multiply_actual) END AS Room_Potential_CXL_Value_FIN_EUR_XRLY,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Room_Potential_No_Show_Value_FIN_LC
+ELSE SAFE_MULTIPLY(CM.Room_Potential_No_Show_Value_FIN_LC, MDXR.XR_Value_Multiply_actual) END AS Room_Potential_NS_Value_FIN_EUR_XRLY,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Total_Revenue_GROSS_LC
+ELSE SAFE_MULTIPLY(CM.Total_Revenue_GROSS_LC, MDXR.XR_Value_Multiply_actual) END AS Total_Revenue_GROSS_EUR_XRLY,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Total_Room_Revenue_GROSS_LC
+ELSE SAFE_MULTIPLY(CM.Total_Room_Revenue_GROSS_LC, MDXR.XR_Value_Multiply_actual) END AS Total_Room_Revenue_GROSS_EUR_XRLY,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Total_FB_Revenue_GROSS_LC
+ELSE SAFE_MULTIPLY(CM.Total_FB_Revenue_GROSS_LC, MDXR.XR_Value_Multiply_actual) END AS FB_Revenue_GROSS_EUR_XRLY,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Total_Other_Revenue_GROSS_LC
+ELSE SAFE_MULTIPLY(CM.Total_Other_Revenue_GROSS_LC, MDXR.XR_Value_Multiply_actual) END AS Other_Revenue_GROSS_EUR_XRLY,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Meetings_Room_Revenue_GROSS_LC
+ELSE SAFE_MULTIPLY(CM.Meetings_Room_Revenue_GROSS_LC, MDXR.XR_Value_Multiply_actual) END AS Meetings_Room_Revenue_GROSS_EUR_XRLY,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Total_Revenue_NET_LC
+ELSE SAFE_MULTIPLY(CM.Total_Revenue_NET_LC, MDXR.XR_Value_Multiply_actual) END AS Total_Revenue_NET_EUR_XRLY,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Total_Room_Revenue_NET_LC
+ELSE SAFE_MULTIPLY(CM.Total_Room_Revenue_NET_LC, MDXR.XR_Value_Multiply_actual) END AS Total_Room_Revenue_NET_EUR_XRLY,
+--400
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Total_FB_Revenue_NET_LC
+ELSE SAFE_MULTIPLY(CM.Total_FB_Revenue_NET_LC, MDXR.XR_Value_Multiply_actual) END AS FB_Revenue_NET_EUR_XRLY,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Total_Other_Revenue_NET_LC
+ELSE SAFE_MULTIPLY(CM.Total_Other_Revenue_NET_LC, MDXR.XR_Value_Multiply_actual) END AS Other_Revenue_NET_EUR_XRLY,
+CASE WHEN MDHotel.Hotel_Currency = "EUR"  THEN CM.Meetings_Room_Revenue_NET_LC
+ELSE SAFE_MULTIPLY(CM.Meetings_Room_Revenue_NET_LC, MDXR.XR_Value_Multiply_actual) END AS Meetings_Room_Revenue_NET_EUR_XRLY,
+
+-- <<PRODUCTION KPI: KPI Bg Cte>>
+--410
+--420
+-- <<PRODUCTION KPI: KPI Other>>
+CM.Total_Revenue_Fin_LC AS Booked_Value_FIN_LC, -- Dummy // Pendiente lógica Booked Value
+CASE WHEN MDHotel.Hotel_Currency = "EUR" THEN CM.Total_Revenue_FIN_LC
+WHEN CM.Hotel_ID = "DKCO.STRAN" THEN 0.13*CM.Total_Revenue_FIN_LC
+ELSE SAFE_MULTIPLY(CM.Total_Revenue_FIN_LC, MDXR.XR_Value_Multiply) END AS Booked_Value_FIN_EUR, -- Dummy // Pendiente lógica Booked Value
+CM.Breakfast_Services,
+-- <<PRODUCTION KPI: KPI Occupation>>
+--430
+CM.Room_Nights,
+CM.Room_Nights_CXL,
+CM.Room_Nights_No_Show AS Room_Nights_NS,
+(CM.Room_Nights+CM.Room_Nights_CXL+CM.Room_Nights_No_Show) AS Room_Nights_Booked,
+CM.PAX_BF AS BF_PAX,
+-- <<PRODUCTION KPI: KPI Dates>>
+--440
+Reservations.Lead_Time_Reservation,
+Lead_Time_Period,
+Reservations.Lenght_Stay_Reservation,
+LOS_Period,
+Reservations.Reservations_Wgt,
+CASE WHEN MDSegment.Segment_Adjusted_ID IN("BUGR","LEGR","TRFT") AND Lead_Time_Reservation/Reservations_Wgt BETWEEN 0 AND 725 THEN "Normal"
+  WHEN MDSegment.Segment_Adjusted_ID NOT IN("BUGR","LEGR","TRFT") AND Lead_Time_Reservation/Reservations_Wgt BETWEEN 0 AND 366 THEN "Normal"
+  ELSE "Outlier"END AS Lead_Time_Flag,
+CASE WHEN Lenght_Stay_Reservation/Reservations_Wgt BETWEEN 0 AND 31 THEN "Normal"
+  ELSE "Outlier" END AS LOS_Flag,
+Reservations.CXL_Lead_Time_Reservation,
+CXL_LT_Period,
+BF_Lenght_Event,
+LOS_BF_Period,
+Booking_File_Wgt,
+CASE WHEN Booking_File_Wgt IS NULL OR BF_Lenght_Event/Booking_File_Wgt >60 OR BF_Lenght_Event is NULL THEN 'Outlier' ELSE 'Normal' END AS Flag_LOS_BF,
+Lead_Time_BF
+
+--From Commercial Mirror Raw
+FROM
+`nh-spit-resevations.Commercial_Mirror.CM_Core_Raw` AS CM
+
+--Join MD_Hotel
+LEFT JOIN
+`nh-spit-resevations.bbdd_maestros.MD_Hotel_Format` AS MDHotel
+ON
+CM.Hotel_ID=MDHotel.Hotel_ID
+
+--Join MD_DatesProduction
+LEFT JOIN
+`nh-spit-resevations.bbdd_maestros.MD_Dates_Format` AS MDDatesProduction
+ON
+CM.Production_Date=MDDatesProduction.Date_ID
+
+--Join MD_DatesCreation
+LEFT JOIN
+`nh-spit-resevations.bbdd_maestros.MD_Dates_Format` AS MDDatesCreation
+ON
+CM.Creation_Date=MDDatesCreation.Date_ID
+
+--Join MD_DatesCheckin
+LEFT JOIN
+`nh-spit-resevations.bbdd_maestros.MD_Dates_Format` AS MDDatesCheckin
+ON
+CM.Check_In_Date=MDDatesCheckin.Date_ID
+
+--Join MD_DatesCheckout
+LEFT JOIN
+`nh-spit-resevations.bbdd_maestros.MD_Dates_Format` AS MDDatesCheckout
+ON
+CM.Check_Out_Date=MDDatesCheckout.Date_ID
+
+--Join MD_DatesCXL
+LEFT JOIN
+`nh-spit-resevations.bbdd_maestros.MD_Dates_Format` AS MDDatesCXL
+ON
+CASE WHEN CM.CXL_Date_Origin is null and CM.Reservation_Status_ID='06' THEN CM.Reservation_Modification_Date ELSE CM.CXL_Date_Origin END=MDDatesCXL.Date_ID
+
+--Join MD_Status_Reservation
+LEFT JOIN
+`nh-spit-resevations.bbdd_maestros.MD_Status_Reservation_Format` AS MDStatusReservation
+ON
+CM.Reservation_Status_ID=MDStatusReservation.Status_Reservation_ID
+
+--Join CRO
+LEFT JOIN `nh-spit-resevations.bbdd_maestros.MD_CRO_Format` AS MDCRO
+ON 
+CM.RO_CRO_Queue=MDCRO.CRO_PID
+
+--Join MD_Commercial_Logic
+LEFT JOIN (
+SELECT *
+FROM
+`nh-spit-resevations.bbdd_maestros.MD_Commercial_Logic_Format` ) AS MDCommercialLogic
+ON
+IFNULL(NULLIF(REPLACE(CM.RO_Channel_ID, '?' , ''),''),'UNKNOWN')=IFNULL(NULLIF(MDCommercialLogic.RO_Channel_ID, ''),'UNKNOWN')
+AND
+IFNULL(NULLIF(REPLACE(CM.RO_Subchannel_ID, '?' , ''),''),'UNKNOWN')=IFNULL(NULLIF(MDCommercialLogic.RO_Subchannel_ID, ''),'UNKNOWN')
+AND
+IFNULL(NULLIF(REPLACE(CM.Reservation_Done_By_ID, '?' , ''),''),'UNKNOWN')=IFNULL(NULLIF(MDCommercialLogic.Reservation_DoneBy_ID, ''),'UNKNOWN')
+AND
+IFNULL(NULLIF(REPLACE(CM.RO_CRO_Queue, '?' , ''),''),'UNKNOWN')=IFNULL(NULLIF(MDCommercialLogic.RO_CRO_Queue, '' ),'UNKNOWN')
+AND
+IFNULL(NULLIF(REPLACE(CM.RO_Intermediary_ID, '?' , ''),''),'UNKNOWN')=IFNULL(NULLIF(MDCommercialLogic.RO_Intermediary_ID, ''),'UNKNOWN')
+AND
+IFNULL(NULLIF(REPLACE(CM.Market_Segment_ID, '?' , ''),''),'UNKNOWN')=IFNULL(NULLIF(MDCommercialLogic.Market_Segment, ''),'UNKNOWN')
+AND
+IFNULL(NULLIF(REPLACE(CM.Market_Subsegment_ID, '?' , ''),''),'UNKNOWN')=IFNULL(NULLIF(MDCommercialLogic.Market_Subsegment, '' ),'UNKNOWN')
+AND
+IFNULL(NULLIF(REPLACE(CM.Rate_Code_ID, '?' , ''),''),'UNKNOWN')=IFNULL(NULLIF(MDCommercialLogic.Rate_Code_ID, ''),'UNKNOWN')
+-- nuevos cruces
+AND 
+IFNULL(NULLIF(REPLACE(CM.Reservation_Type_ID, '?' , ''),''),'UNKNOWN')=IFNULL(NULLIF(MDCommercialLogic.RO_Reservation_type, ''),'UNKNOWN')
+AND 
+IFNULL(NULLIF(REPLACE(MDCRO.CRO_Web_Category, '?' , ''),''),'UNKNOWN')=IFNULL(NULLIF(MDCommercialLogic.CRO_Web_Category, ''),'UNKNOWN')
+
+--Join MD_Segment
+LEFT JOIN
+`nh-spit-resevations.bbdd_maestros.MD_Segment_Format` AS MDSegment
+ON
+CM.Market_Segment_ID=MDSegment.Segment_ID
+
+--Join MD_Agency
+LEFT JOIN
+`nh-spit-resevations.bbdd_maestros.MD_Agency_Format` AS MDAgency
+ON
+CM.Agency_ID=MDAgency.Agency_ID
+
+--Join MD_Company
+LEFT JOIN
+`nh-spit-resevations.bbdd_maestros.MD_Company_Format` AS MDCompany
+ON
+CM.Company_ID=MDCompany.Company_ID
+
+--Join MD_Feeder_Market_Country_Guest
+LEFT JOIN
+`nh-spit-resevations.bbdd_maestros.MD_Feeder_Market_Format` AS MDFeederMarketGuest
+ON
+CM.RO_Guest_Country_ID=MDFeederMarketGuest.Country_ID
+
+--Join MD_Agency_Branch // Pendiente crear MD
+--LEFT JOIN
+--`nh-spit-resevations.bbdd_maestros.MD_Agency_Branch_Format` AS MDAgencyBranch
+--ON
+--CM.GQ_Branch_Agency_ID=MDAgencyBranch.Branch_ID
+
+--Join MD_Company_Branch // Pendiente crear MD
+--LEFT JOIN
+--`nh-spit-resevations.bbdd_maestros.MD_Company_Branch_Format` AS MDCompanyBranch
+--ON
+--CM.GQ_Branch_Company_ID=MDCompanyBranch.Branch_ID
+-- JOIN MD_RoomType_Tier_Format
+LEFT JOIN 
+`nh-spit-resevations.bbdd_maestros.MD_RoomType_Tier_Format` AS RoomContracted
+ON
+CM.RoomType_Contracted=RoomContracted.RoomType
+LEFT JOIN 
+`nh-spit-resevations.bbdd_maestros.MD_RoomType_Tier_Format` AS RoomUpgrade
+ON
+CM.RoomType_Upgrade=RoomUpgrade.RoomType
+LEFT JOIN 
+`nh-spit-resevations.bbdd_maestros.MD_RoomType_Tier_Format` AS RoomProduced
+ON
+CM.RoomType_Produced=RoomProduced.RoomType
+
+--Join MD_Intermediary_Company
+LEFT JOIN
+`nh-spit-resevations.bbdd_maestros.MD_Company_Format` AS MDIntermediaryCompany
+ON
+CM.Intermediary_ID=MDIntermediaryCompany.Company_ID
+
+--Join MD_Intermediary_Agency
+LEFT JOIN
+`nh-spit-resevations.bbdd_maestros.MD_Agency_Format` AS MDIntermediaryAgency
+ON
+CM.Intermediary_ID=MDIntermediaryAgency.Agency_ID
+
+--Join MD_XR
+LEFT JOIN (
+SELECT XR_From_Curr_ID,concat(extract(year from XR_Date),"-", extract(month from XR_Date)) as XR_Date, max(XR_Value_Multiply) as XR_Value_Multiply, max(XR_Value_Multiply_actual) as XR_Value_Multiply_actual 
+FROM
+`nh-spit-resevations.bbdd_maestros.MD_XR_Adjusted` 
+GROUP BY XR_From_Curr_ID,concat(extract(year from XR_Date),"-", extract(month from XR_Date))) AS MDXR
+ON
+MDHotel.Hotel_Currency=MDXR.XR_From_Curr_ID
+AND
+concat(extract(year from CM.Production_Date),"-", extract(month from CM.Production_Date))=XR_Date
+
+-- Join Commercial_Mirror Raw to obtain KPIs at Reservation Level
+LEFT JOIN 
+(SELECT 
+  Reservation_ID,
+  DATE_DIFF(MIN(Check_in_Date),MIN(Creation_Date),DAY)/COUNT(Reservation_ID) AS Lead_Time_Reservation,
+  CASE
+  WHEN   DATE_DIFF(MIN(Check_in_Date),MIN(Creation_Date),DAY) < 3 THEN "00-02 Days"
+  WHEN   DATE_DIFF(MIN(Check_in_Date),MIN(Creation_Date),DAY) BETWEEN 3 AND 5 THEN "03-05 Days"
+  WHEN   DATE_DIFF(MIN(Check_in_Date),MIN(Creation_Date),DAY) BETWEEN 6 AND 7 THEN "06-07 Days"
+  WHEN   DATE_DIFF(MIN(Check_in_Date),MIN(Creation_Date),DAY) BETWEEN 8 AND 14 THEN "08-14 Days"
+  WHEN   DATE_DIFF(MIN(Check_in_Date),MIN(Creation_Date),DAY) BETWEEN 15 AND 21 THEN "15-21 Days"
+  WHEN   DATE_DIFF(MIN(Check_in_Date),MIN(Creation_Date),DAY) BETWEEN 22 AND 30 THEN "22-30 Days"
+  WHEN   DATE_DIFF(MIN(Check_in_Date),MIN(Creation_Date),DAY) BETWEEN 31 AND 45 THEN "31-45 Days"
+  WHEN   DATE_DIFF(MIN(Check_in_Date),MIN(Creation_Date),DAY) BETWEEN 46 AND 60 THEN "45-60 Days"
+  ELSE "60> Days" END AS Lead_Time_Period,
+  DATE_DIFF(MAX(Check_out_Date),MIN(Check_in_Date),DAY)/COUNT(Reservation_ID) AS Lenght_Stay_Reservation,
+  CASE
+  WHEN   DATE_DIFF(MAX(Check_out_Date),MIN(Check_in_Date),DAY) < 1 THEN "0 Days"
+  WHEN   DATE_DIFF(MAX(Check_out_Date),MIN(Check_in_Date),DAY) BETWEEN 0 AND 1 THEN "1 Day"
+  WHEN   DATE_DIFF(MAX(Check_out_Date),MIN(Check_in_Date),DAY) BETWEEN 1 AND 2 THEN "2 Days"
+  WHEN   DATE_DIFF(MAX(Check_out_Date),MIN(Check_in_Date),DAY) BETWEEN 2 AND 3 THEN "3 Days"
+  WHEN   DATE_DIFF(MAX(Check_out_Date),MIN(Check_in_Date),DAY) BETWEEN 3 AND 4 THEN "4 Days"
+  ELSE "4> Days" END AS LOS_Period,
+  DATE_DIFF(MIN(Check_in_Date),MAX(CXL_Date_Origin),DAY)/COUNT(Reservation_ID) AS CXL_Lead_Time_Reservation,
+  CASE
+  WHEN   DATE_DIFF(MIN(Check_In_Date),MAX(CXL_Date_Origin),DAY) IS NULL THEN "Null"
+  WHEN   DATE_DIFF(MIN(Check_In_Date),MAX(CXL_Date_Origin),DAY) < 1 THEN "0 Days"
+  WHEN   DATE_DIFF(MIN(Check_In_Date),MAX(CXL_Date_Origin),DAY) BETWEEN 1 AND 5 THEN "01-05 Days"
+  WHEN   DATE_DIFF(MIN(Check_In_Date),MAX(CXL_Date_Origin),DAY) BETWEEN 5 AND 7 THEN "05-07 Days"
+  WHEN   DATE_DIFF(MIN(Check_In_Date),MAX(CXL_Date_Origin),DAY) BETWEEN 7 AND 14 THEN "07-14 Days"
+  WHEN   DATE_DIFF(MIN(Check_In_Date),MAX(CXL_Date_Origin),DAY) BETWEEN 14 AND 30 THEN "14-30 Days"
+  ELSE "30> Days"
+  END AS CXL_LT_Period,
+  1/COUNT(Reservation_ID) AS Reservations_Wgt,
+  FROM `nh-spit-resevations.Commercial_Mirror.CM_Core_Raw`
+  GROUP BY 
+  Reservation_ID) as Reservations
+ON CM.Reservation_ID = Reservations.Reservation_ID
+
+-- Join Commercial_Mirror Raw to obtain BF KPIs
+LEFT JOIN 
+(SELECT 
+  Booking_File_ID,
+  DATE_DIFF(MAX(BF_End_Date),MIN(BF_Start_Date),DAY)/COUNT(Booking_File_ID) AS BF_Lenght_Event,
+  DATE_DIFF(MIN(BF_Start_Date),MIN(BF_Creation_Date),DAY)/COUNT(Booking_File_ID) AS Lead_Time_BF,
+  CASE 
+  WHEN   DATE_DIFF(MAX(BF_End_Date),MIN(BF_Start_Date),DAY) IS NULL THEN "Null"
+  WHEN   DATE_DIFF(MAX(BF_End_Date),MIN(BF_Start_Date),DAY) <1 THEN "0 Days"
+  WHEN   DATE_DIFF(MAX(BF_End_Date),MIN(BF_Start_Date),DAY) BETWEEN 0 AND 1 THEN "1 Days"
+  WHEN   DATE_DIFF(MAX(BF_End_Date),MIN(BF_Start_Date),DAY) BETWEEN 1 AND 2 THEN "2 Days"
+  WHEN   DATE_DIFF(MAX(BF_End_Date),MIN(BF_Start_Date),DAY) BETWEEN 2 AND 3 THEN "3 Days"
+  WHEN   DATE_DIFF(MAX(BF_End_Date),MIN(BF_Start_Date),DAY) BETWEEN 3 AND 4 THEN "4 Days"
+  WHEN   DATE_DIFF(MAX(BF_End_Date),MIN(BF_Start_Date),DAY) BETWEEN 4 AND 7 THEN "4-7 Days"
+  ELSE "7> Days" END AS LOS_BF_Period,
+  1/COUNT(Booking_File_ID) AS Booking_File_Wgt,
+  SUM(CASE WHEN MDHotel.Hotel_Currency = "EUR" THEN Total_Revenue_FIN_LC
+      ELSE SAFE_MULTIPLY(Total_Revenue_FIN_LC, MDXR.XR_Value_Multiply) END) AS TREV_BF
+  FROM `nh-spit-resevations.Commercial_Mirror.CM_Core_Raw` t1
+  --Join MD_Hotel
+    LEFT JOIN
+    `nh-spit-resevations.bbdd_maestros.MD_Hotel_Format` AS MDHotel
+    ON
+    t1.Hotel_ID=MDHotel.Hotel_ID
+  --Join MD_XR
+    LEFT JOIN (
+    SELECT XR_From_Curr_ID,concat(extract(year from XR_Date),"-", extract(month from XR_Date)) as XR_Date, max(XR_Value_Multiply) as XR_Value_Multiply, max(XR_Value_Multiply_actual) as XR_Value_Multiply_actual 
+    FROM
+    `nh-spit-resevations.bbdd_maestros.MD_XR_Adjusted` 
+    GROUP BY XR_From_Curr_ID,concat(extract(year from XR_Date),"-", extract(month from XR_Date))) AS MDXR
+    ON
+    MDHotel.Hotel_Currency=MDXR.XR_From_Curr_ID
+    AND
+    concat(extract(year from t1.Production_Date),"-", extract(month from t1.Production_Date))=XR_Date
+  where booking_file_id is not null and Booking_File_ID like 'MB%'
+  GROUP BY 
+  Booking_File_ID) as BF
+ON CM.Booking_File_ID = BF.Booking_File_ID
+
+
+-- JOIN CM to obtain main_branch when company_id has information, but no Branch_Company from CM
+LEFT JOIN(
+SELECT distinct
+Reservation_ID,
+CM.Company_ID,
+CM.GQ_Branch_Company_ID,
+MDCompanyBranch.BID_Company AS Company_Branch_ID,
+MDCompanyBranch.BID_Company_Name,
+MDCompanyBranch.BID_Company_Country,
+MDCompanyBranch.BID_Company_Country_Name,
+MDCompanyBranch.BID_Company_Main_Branch,
+MDCompanyBranch.BID_Company_Status,
+MDCompanyBranch.BID_Company_AH,
+--From Commercial Mirror Raw
+FROM
+`nh-spit-resevations.Commercial_Mirror.CM_Core_Raw` AS CM
+-- CRUCE
+LEFT JOIN
+`nh-spit-resevations.bbdd_maestros.MD_Branch_Company_Format_Agg` AS MDCompanyBranch
+ON
+concat(CM.Company_ID,"X")=concat(MDCompanyBranch.PID_Company,MDCompanyBranch.BID_Company_Main_Branch)
+where GQ_Branch_Company_ID IS NULL or GQ_Branch_Company_ID='') BranchComp2
+ON CM.Reservation_ID=BranchComp2.Reservation_ID and CM.GQ_Branch_Company_ID=BranchComp2.GQ_Branch_Company_ID and CM.Company_ID=BranchComp2.Company_ID
+
+-- JOIN CM to obtain main_branch when company_id and branch_company from CM have wrong information
+LEFT JOIN(
+SELECT distinct 
+Reservation_ID,
+CM.Company_ID,
+CM.GQ_Branch_Company_ID,
+CASE WHEN CM.Company_ID =MDCompanyBranch.PID_Company THEN CM.GQ_Branch_Company_ID
+     WHEN CM.Company_ID <>MDCompanyBranch.PID_Company OR MDCompanyBranch.PID_Company IS NULL THEN MDComp.BID_Company
+     WHEN CM.Company_ID='WITHOUT_C' THEN 'WITHOUT_C'
+     ELSE "Check" END as Company_Branch_ID,
+CASE WHEN CM.Company_ID =MDCompanyBranch.PID_Company THEN MDCompanyBranch.BID_Company_Name
+     WHEN CM.Company_ID <>MDCompanyBranch.PID_Company OR MDCompanyBranch.PID_Company IS NULL THEN MDComp.BID_Company_Name
+     WHEN CM.Company_ID='WITHOUT_C' THEN 'WITHOUT_C'
+     ELSE "Check" END as Company_Branch_Name,
+CASE WHEN CM.Company_ID =MDCompanyBranch.PID_Company THEN MDCompanyBranch.BID_Company_Country
+     WHEN CM.Company_ID <>MDCompanyBranch.PID_Company OR MDCompanyBranch.PID_Company IS NULL THEN MDComp.BID_Company_Country
+     WHEN CM.Company_ID='WITHOUT_C' THEN 'WITHOUT_C'
+     ELSE "Check" END as Company_Branch_Country_ID,
+CASE WHEN CM.Company_ID =MDCompanyBranch.PID_Company THEN MDCompanyBranch.BID_Company_Country_Name
+     WHEN CM.Company_ID <>MDCompanyBranch.PID_Company OR MDCompanyBranch.PID_Company IS NULL THEN MDComp.BID_Company_Country_Name
+     WHEN CM.Company_ID='WITHOUT_C' THEN 'WITHOUT_C'
+     ELSE "Check" END as Company_Branch_Country_Name,
+CASE WHEN CM.Company_ID =MDCompanyBranch.PID_Company THEN MDCompanyBranch.BID_Company_Main_Branch
+     WHEN CM.Company_ID <>MDCompanyBranch.PID_Company OR MDCompanyBranch.PID_Company IS NULL THEN MDComp.BID_Company_Main_Branch
+     WHEN CM.Company_ID='WITHOUT_C' THEN 'WITHOUT_C'
+     ELSE "Check" END as Company_Branch_Main,
+CASE WHEN CM.Company_ID =MDCompanyBranch.PID_Company THEN MDCompanyBranch.BID_Company_Status
+     WHEN CM.Company_ID <>MDCompanyBranch.PID_Company OR MDCompanyBranch.PID_Company IS NULL THEN MDComp.BID_Company_Status
+     WHEN CM.Company_ID='WITHOUT_C' THEN 'WITHOUT_C'
+     ELSE "Check" END as Company_Branch_Status,
+CASE WHEN CM.Company_ID =MDCompanyBranch.PID_Company THEN MDCompanyBranch.BID_Company_AH
+     WHEN CM.Company_ID <>MDCompanyBranch.PID_Company OR MDCompanyBranch.PID_Company IS NULL THEN MDComp.BID_Company_AH
+     WHEN CM.Company_ID='WITHOUT_C' THEN 'WITHOUT_C'
+     ELSE "Check" END as Company_Branch_AH
+
+--From Commercial Mirror Raw
+FROM
+`nh-spit-resevations.Commercial_Mirror.CM_Core_Raw` AS CM
+-- CRUCE
+LEFT JOIN
+`nh-spit-resevations.bbdd_maestros.MD_Branch_Company_Format_Agg` AS MDCompanyBranch
+ON
+CM.GQ_Branch_Company_ID=MDCompanyBranch.BID_Company
+LEFT JOIN 
+`nh-spit-resevations.bbdd_maestros.MD_Branch_Company_Format_Agg` AS MDComp
+ON concat(CM.Company_ID,"X")=concat(MDComp.PID_Company,MDComp.BID_Company_Main_Branch)
+where GQ_Branch_Company_ID<>'WITHOUT_C' and GQ_Branch_Company_ID<>'') BranchComp
+ON CM.Reservation_ID=BranchComp.Reservation_ID and CM.GQ_Branch_Company_ID=BranchComp.GQ_Branch_Company_ID and CM.Company_ID=BranchComp.Company_ID
+
+
+
+--JOIN CM to obtain Agency_main_branch when Agency_id has information, but no Branch_Company from CM
+LEFT JOIN(
+SELECT distinct
+Reservation_ID,
+CM.Agency_ID,
+CM.GQ_Branch_Agency_ID,
+MDAgencyBranch.BID_Agency AS Agency_Branch_ID,
+MDAgencyBranch.BID_Agency_Name,
+MDAgencyBranch.BID_Agency_Country,
+MDAgencyBranch.BID_Agency_Country_Name,
+MDAgencyBranch.BID_Agency_Main_Branch,
+MDAgencyBranch.BID_Agency_Status,
+MDAgencyBranch.BID_Agency_AH,
+--From Commercial Mirror Raw
+FROM
+`nh-spit-resevations.Commercial_Mirror.CM_Core_Raw` AS CM
+-- CRUCE
+LEFT JOIN
+`nh-spit-resevations.bbdd_maestros.MD_Branch_Agency_Format_Agg` AS MDAgencyBranch
+ON
+concat(CM.Agency_ID,"X")=concat(MDAgencyBranch.PID_Agency,MDAgencyBranch.BID_Agency_Main_Branch)
+where GQ_Branch_Agency_ID IS NULL or GQ_Branch_Agency_ID='') BranchAgency2
+ON CM.Reservation_ID=BranchAgency2.Reservation_ID and CM.GQ_Branch_Agency_ID=BranchAgency2.GQ_Branch_Agency_ID and CM.Agency_ID=BranchAgency2.Agency_ID
+
+
+-- JOIN CM to obtain main_branch when Agency_id and branch_Agency from CM have wrong information
+LEFT JOIN(
+SELECT distinct 
+Reservation_ID,
+CM.Agency_ID,
+CM.GQ_Branch_Agency_ID,
+CASE WHEN CM.Agency_ID =MDAgencyBranch.PID_Agency THEN CM.GQ_Branch_Agency_ID
+     WHEN CM.Agency_ID <>MDAgencyBranch.PID_Agency OR MDAgencyBranch.PID_Agency IS NULL THEN MDAgen.BID_Agency
+     WHEN CM.Agency_ID='WITHOUT_A' THEN 'WITHOUT_A'
+     ELSE "Check" END as Agency_Branch_ID,
+CASE WHEN CM.Agency_ID =MDAgencyBranch.PID_Agency THEN MDAgencyBranch.BID_Agency_Name
+     WHEN CM.Agency_ID <>MDAgencyBranch.PID_Agency OR MDAgencyBranch.PID_Agency IS NULL THEN MDAgen.BID_Agency_Name
+     WHEN CM.Agency_ID='WITHOUT_C' THEN 'WITHOUT_C'
+     ELSE "Check" END as Agency_Branch_Name,
+CASE WHEN CM.Agency_ID =MDAgencyBranch.PID_Agency THEN MDAgencyBranch.BID_Agency_Country
+     WHEN CM.Agency_ID <>MDAgencyBranch.PID_Agency OR MDAgencyBranch.PID_Agency IS NULL THEN MDAgen.BID_Agency_Country
+     WHEN CM.Agency_ID='WITHOUT_C' THEN 'WITHOUT_C'
+     ELSE "Check" END as Agency_Branch_Country_ID,
+CASE WHEN CM.Agency_ID =MDAgencyBranch.PID_Agency THEN MDAgencyBranch.BID_Agency_Country_Name
+     WHEN CM.Agency_ID <>MDAgencyBranch.PID_Agency OR MDAgencyBranch.PID_Agency IS NULL THEN MDAgen.BID_Agency_Country_Name
+     WHEN CM.Agency_ID='WITHOUT_C' THEN 'WITHOUT_C'
+     ELSE "Check" END as Agency_Branch_Country_Name,
+CASE WHEN CM.Agency_ID =MDAgencyBranch.PID_Agency THEN MDAgencyBranch.BID_Agency_Main_Branch
+     WHEN CM.Agency_ID <>MDAgencyBranch.PID_Agency OR MDAgencyBranch.PID_Agency IS NULL THEN MDAgen.BID_Agency_Main_Branch
+     WHEN CM.Agency_ID='WITHOUT_C' THEN 'WITHOUT_C'
+     ELSE "Check" END as Agency_Branch_Main,
+CASE WHEN CM.Agency_ID =MDAgencyBranch.PID_Agency THEN MDAgencyBranch.BID_Agency_Status
+     WHEN CM.Agency_ID <>MDAgencyBranch.PID_Agency OR MDAgencyBranch.PID_Agency IS NULL THEN MDAgen.BID_Agency_Status
+     WHEN CM.Agency_ID='WITHOUT_C' THEN 'WITHOUT_C'
+     ELSE "Check" END as Agency_Branch_Status,
+CASE WHEN CM.Agency_ID =MDAgencyBranch.PID_Agency THEN MDAgencyBranch.BID_Agency_AH
+     WHEN CM.Agency_ID <>MDAgencyBranch.PID_Agency OR MDAgencyBranch.PID_Agency IS NULL THEN MDAgen.BID_Agency_AH
+     WHEN CM.Agency_ID='WITHOUT_C' THEN 'WITHOUT_C'
+     ELSE "Check" END as Agency_Branch_AH
+--From Commercial Mirror Raw
+FROM
+`nh-spit-resevations.Commercial_Mirror.CM_Core_Raw` AS CM
+-- CRUCE
+LEFT JOIN
+`nh-spit-resevations.bbdd_maestros.MD_Branch_Agency_Format_Agg` AS MDAgencyBranch
+ON
+CM.GQ_Branch_Agency_ID=MDAgencyBranch.BID_Agency
+LEFT JOIN 
+`nh-spit-resevations.bbdd_maestros.MD_Branch_Agency_Format_Agg` AS MDAgen
+ON concat(CM.Agency_ID,"X")=concat(MDAgen.PID_Agency,MDAgen.BID_Agency_Main_Branch)
+where GQ_Branch_Agency_ID<>'WITHOUT_A' and GQ_Branch_Agency_ID<>'') BranchAgency
+ON CM.Reservation_ID=BranchAgency.Reservation_ID and CM.GQ_Branch_Agency_ID=BranchAgency.GQ_Branch_Agency_ID and CM.Agency_ID=BranchAgency.Agency_ID
+
+
+-- JOIN MD_Subsegment
+LEFT JOIN 
+`nh-spit-resevations.bbdd_maestros.MD_Subsegment_Format` as Subsegment
+ON
+CM.Market_Subsegment_ID=Subsegment.Reservation_Subsegment_ID
+
+-- JOIN MD_Subsegment-Segment
+LEFT JOIN 
+`nh-spit-resevations.bbdd_maestros.MD_Subsegment_Segment_Format` as SegmentSubsegment
+ON
+CM.Market_Segment_ID=SegmentSubsegment.Segment_ID
+
+-- JOIN MD_Reservation Type
+LEFT JOIN 
+`nh-spit-resevations.bbdd_maestros.MD_Reservation_Type_Format` as ReservationType
+ON
+CM.Reservation_Type_ID=ReservationType.RO_Reservation_Type
+
+--Join TOP_Agency
+LEFT JOIN
+`nh-spit-resevations.bbdd_maestros.MD_TopAgency` AS TopAgency
+ON
+MDAgency.Agency_Global_ID=TopAgency.Agency
+
+--Join TOP_Company
+LEFT JOIN
+`nh-spit-resevations.bbdd_maestros.MD_TopCompany` AS TopCompany
+ON
+MDCompany.Company_Global_ID=TopCompany.Company_Global_ID
+
+--Join TOP_Intermediary
+LEFT JOIN
+`nh-spit-resevations.bbdd_maestros.MD_TopIntermediary` AS TopIntermediary
+ON
+CASE WHEN MDIntermediaryAgency.Agency_Global_ID = "" OR MDIntermediaryAgency.Agency_Global_ID IS NULL  THEN MDIntermediaryCompany.Company_Global_ID
+ELSE MDIntermediaryAgency.Agency_Global_ID END=TopIntermediary.Intermediary_Global_ID
+
+
+-- Para el W&W, meter RO_Contract desde el Daily como Workarround.
+LEFT JOIN (SELECT DISTINCT Reservation_Origin_ID, CASE WHEN RO_Contract is null then '' ELSE RO_Contract END AS RO_Contract FROM `nh-spit-resevations.NH_Daily_Table_EUROPE.Daily_UNION_Extended`) Daily
+ON CM.Reservation_ID= Daily.Reservation_Origin_ID
+
+-- Reservas que no cruzan con el Daily y se ha buscado en TMS su contrato asociado
+LEFT JOIN `nh-spit-resevations.bbdd_maestros.WW_2022_Reserv-Contract_Format` Extra
+ON CM.Reservation_ID= Extra.Reservation_ID
+
+-- Include Booked Revenue from MD
+LEFT JOIN (SELECT * FROM `nh-spit-resevations.bbdd_maestros.MD_BookedRevenue` where Reservation_Status_ID ='03' and Flag='Normal') Booked
+ON CM.Reservation_ID= CAST(Booked.Reservation_ID AS STRING) and CM.Production_date=Booked.Production_Date
+
+-- include numbers of rows for key reservation-production_date to divide booked revenue
+LEFT JOIN (select reservation_id, production_date, count(1) as count_rows from `nh-spit-resevations.Commercial_Mirror.CM_Core_Raw` group by reservation_id, production_date) count_reserv
+ON CM.Reservation_ID=count_reserv.reservation_ID and CM.Production_date=count_reserv.production_date

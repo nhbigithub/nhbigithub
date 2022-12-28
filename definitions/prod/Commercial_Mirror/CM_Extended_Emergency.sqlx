@@ -1,0 +1,16 @@
+config {
+  type: "table",
+  dependencies: ["CM_Extended"],
+  schema:"Commercial_Mirror",
+  name: "CM_Core_Extended",
+  tags: ["CM_Emergency"]
+}
+
+--CREATE OR REPLACE TABLE `nh-spit-resevations.Commercial_Mirror.CM_Core_Extended` AS (
+-- selecciona toda las filas del CM y le añade la foto de los meses que no están, de la últ. foto disponible
+select * FROM `nh-spit-resevations.Commercial_Mirror.CM_Core_Extended`
+UNION ALL
+select * EXCEPT(load_date) FROM `nh-spit-resevations.Commercial_Mirror.CM_Core_DailyBK2022_V2`
+WHERE load_date=Current_date()-1 -- fecha de última foto correcta
+AND 
+(Production_Year IN ('2019','2020','2021') OR Production_Year_Month IN ('2022-01','2022-02','2022-03','2022-04','2022-05','2022-06','2022-07','2022-08','2022-09','2022-10') )
