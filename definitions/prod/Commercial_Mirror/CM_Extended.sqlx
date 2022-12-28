@@ -1,5 +1,5 @@
 config {
- 
+  dependencies:["CM_Core_Raw"],
   tags: ["CM_Emergency", "Commercial_Mirror"]
 }
 
