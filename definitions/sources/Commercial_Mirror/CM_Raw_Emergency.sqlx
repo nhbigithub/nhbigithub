@@ -1,6 +1,5 @@
 config {
   type: "table",
-  schema:"Commercial_Mirror",
   name: "CM_Core_Raw",
   tags: ["CM_Emergency"]
 }

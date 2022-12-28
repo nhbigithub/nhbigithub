@@ -1,7 +1,6 @@
 config {
   type: "table",
   dependencies: ["CM_Extended"],
-  schema:"Commercial_Mirror",
   name: "CM_Core_Extended",
   tags: ["CM_Emergency"]
 }
